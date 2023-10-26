@@ -1,0 +1,34 @@
+#git-updates.diff
+#FIXME deb-setup.diff
+deb-locations.diff
+distutils-install-layout.diff
+locale-module.diff
+sysconfig-debian-schemes.diff
+tkinter-import.diff
+gdbm-import.diff
+link-opt.diff
+setup-modules.diff
+profiled-build.diff
+langpack-gettext.diff
+disable-sem-check.diff
+lib-argparse.diff
+ctypes-arm.diff
+# link-timemodule.diff
+#lto-link-flags.diff
+multiarch.diff
+test-no-random-order.diff
+tempfile-minimal.diff
+ensurepip-disabled.diff
+reproducible-buildinfo.diff
+pydoc-use-pager.diff
+local-doc-references.diff
+#build-math-object.diff
+argparse-no-shutil.diff
+sysconfigdata-name.diff
+#UPDATE: hurd_kfreebsd_thread_native_id.diff
+sphinx3.diff
+destshared-location.diff
+fix-py_compile.diff
+ntpath-import.diff
+python3.12-updates.diff
+108533.diff
