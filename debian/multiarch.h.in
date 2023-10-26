@@ -19,6 +19,20 @@
 #  include <hppa-linux-gnu/@subdir@/@header@>
 # elif defined(__ia64__)
 #  include <ia64-linux-gnu/@subdir@/@header@>
+# elif defined(__loongarch__)
+#  if defined(__loongarch_lp64)
+#   if defined(__loongarch_soft_float)
+#       include <loongarch64-linux-gnusf/@subdir@/@header@>
+#   elif defined(__loongarch_single_float)
+#       include <loongarch64-linux-gnuf32/@subdir@/@header@>
+#   elif defined(__loongarch_double_float)
+#       include <loongarch64-linux-gnu/@subdir@/@header@>
+#   else
+#       error unknown multiarch location for @header@
+#   endif
+#  else
+#       error unknown multiarch location for @header@
+#  endif
 # elif defined(__m68k__) && !defined(__mcoldfire__)
 #  include <m68k-linux-gnu/@subdir@/@header@>
 # elif defined(__mips_hard_float) && defined(__mips_isa_rev) && (__mips_isa_rev >=6) && defined(_MIPSEL)
