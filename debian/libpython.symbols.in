@@ -870,7 +870,7 @@
  PyThread_get_key_value@Base @SVER@
  PyThread_get_stacksize@Base @SVER@
  PyThread_get_thread_ident@Base @SVER@
- PyThread_get_thread_native_id@Base @SVER@
+ (arch=linux-any)PyThread_get_thread_native_id@Base @SVER@
  PyThread_init_thread@Base @SVER@
  PyThread_release_lock@Base @SVER@
  PyThread_set_key_value@Base @SVER@
@@ -1218,6 +1218,7 @@
  _PyCrossInterpreterData_NewObject@Base @SVER@
  _PyCrossInterpreterData_RegisterClass@Base @SVER@
  _PyCrossInterpreterData_Release@Base @SVER@
+ _PyCrossInterpreterData_ReleaseAndRawFree@Base @SVER@
  _PyCrossInterpreterData_UnregisterClass@Base @SVER@
  _PyDeadline_Get@Base @SVER@
  _PyDeadline_Init@Base @SVER@
@@ -1326,11 +1327,14 @@
  _PyInterpreterState_IDDecref@Base @SVER@
  _PyInterpreterState_IDIncref@Base @SVER@
  _PyInterpreterState_IDInitref@Base @SVER@
+ _PyInterpreterState_IsRunningMain@Base @SVER@
  _PyInterpreterState_LookUpID@Base @SVER@
  _PyInterpreterState_RequireIDRef@Base @SVER@
  _PyInterpreterState_RequiresIDRef@Base @SVER@
  _PyInterpreterState_SetConfig@Base @SVER@
  _PyInterpreterState_SetEvalFrameFunc@Base @SVER@
+ _PyInterpreterState_SetNotRunningMain@Base @SVER@
+ _PyInterpreterState_SetRunningMain@Base @SVER@
  _PyList_DebugMallocStats@Base @SVER@
  _PyList_Extend@Base @SVER@
  _PyLong_AsByteArray@Base @SVER@
@@ -1714,6 +1718,7 @@
  _Py_hashtable_foreach@Base @SVER@
  _Py_hashtable_get@Base @SVER@
  _Py_hashtable_hash_ptr@Base @SVER@
+ _Py_hashtable_len@Base @SVER@
  _Py_hashtable_new@Base @SVER@
  _Py_hashtable_new_full@Base @SVER@
  _Py_hashtable_set@Base @SVER@

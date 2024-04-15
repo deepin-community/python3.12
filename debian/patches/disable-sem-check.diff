@@ -6,7 +6,7 @@ Forwarded: not-needed
 
 --- a/configure.ac
 +++ b/configure.ac
-@@ -5687,10 +5687,15 @@ AC_CACHE_CHECK([whether POSIX semaphores
+@@ -5790,10 +5790,15 @@ AC_CACHE_CHECK([whether POSIX semaphores
    [ac_cv_posix_semaphores_enabled=yes])
  )
  AS_VAR_IF([ac_cv_posix_semaphores_enabled], [no], [

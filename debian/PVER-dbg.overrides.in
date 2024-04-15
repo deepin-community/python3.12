@@ -8,3 +8,6 @@
 
 # pyexpat.c contains expat error messages that lintian mis-attributes to embedding
 @PVER@-dbg binary: embedded-library
+
+# no, it's not unusual
+@PVER@-dbg binary: unusual-interpreter

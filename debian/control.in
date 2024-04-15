@@ -2,21 +2,22 @@ Source: @PVER@
 Section: python
 Priority: optional
 Maintainer: Matthias Klose <doko@debian.org>
+Uploaders: Stefano Rivera <stefanor@debian.org>
 Build-Depends: debhelper (>= 11), @bd_dpkgdev@
   quilt, autoconf,
   lsb-release, sharutils,
-  libreadline-dev | libeditreadline-dev, libncursesw5-dev (>= 5.3), @bd_gcc@
+  libreadline-dev | libeditreadline-dev, libncurses-dev, @bd_gcc@
   zlib1g-dev, libbz2-dev, liblzma-dev,
   libgdbm-dev, @bd_dbm@,
   tk-dev, blt-dev (>= 2.4z), libssl-dev,
   libexpat1-dev,
   libbluetooth-dev [linux-any] <!pkg.@PVER@.nobluetooth>,
   locales-all,
-  libsqlite3-dev, libffi-dev (>= 3.0.5) [!or1k !avr32],
+  libsqlite3-dev, libffi-dev (>= 3.0.5) [!or1k],
   libgpm2 [linux-any],
   media-types | mime-support, netbase, bzip2, time, python3@bd_qual@, @PVER@@bd_qual@ <cross>,
   net-tools, xvfb <!nocheck>, xauth <!nocheck>, tzdata <!nocheck>,
-  systemtap-sdt-dev,
+  systemtap-sdt-dev [!hurd-amd64 !hurd-i386],
   valgrind-if-available,
 Build-Depends-Indep: python3-sphinx, python3-docs-theme, texinfo
 Standards-Version: 4.6.2
@@ -64,10 +65,10 @@ Multi-Arch: same
 Priority: @PRIO@
 Pre-Depends: ${misc:Pre-Depends}
 Depends: lib@PVER@-minimal (= ${binary:Version}),
-  media-types | mime-support, tzdata,
+  media-types | mime-support, netbase, tzdata,
   ${shlibs:Depends}, ${misc:Depends}
-Breaks: python3-gdbm (<< 3.9.9-1~)
-Replaces: python3-gdbm (<< 3.9.9-1~)
+Breaks: python3-gdbm (<< 3.9.9-1~), libpython3.12-testsuite (<< 3.12.0-3~)
+Replaces: python3-gdbm (<< 3.9.9-1~), libpython3.12-testsuite (<< 3.12.0-3~)
 Description: Interactive high-level object-oriented language (standard library, version @VER@)
  Python is a high-level, interactive, object-oriented language. Its @VER@ version
  includes an extensive class library with lots of goodies for

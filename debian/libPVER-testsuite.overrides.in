@@ -4,3 +4,5 @@ lib@PVER@-testsuite binary: privacy-breach-generic
 lib@PVER@-testsuite binary: command-with-path-in-maintainer-script
 lib@PVER@-testsuite binary: package-installs-python-egg
 lib@PVER@-testsuite binary: national-encoding
+lib@PVER@-testsuite binary: unusual-interpreter
+lib@PVER@-testsuite binary: executable-not-elf-or-script

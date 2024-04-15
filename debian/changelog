@@ -1,8 +1,73 @@
-python3.12 (3.12.0-1deepin1) unstable; urgency=medium
+python3.12 (3.12.2-1) unstable; urgency=medium
 
-  * Add support for LoongArch in debian/multiarch.h.in.
+  * Python 3.12.2 release.
+  * Don't build-depend on systemtap-sdt-dev on the Hurd.
+  * Refresh patches.
 
- -- Chang Yang <yangchang@deepin.org>  Thu, 26 Oct 2023 15:13:44 +0800
+ -- Matthias Klose <doko@debian.org>  Wed, 07 Feb 2024 21:47:03 +0100
+
+python3.12 (3.12.1-2) unstable; urgency=medium
+
+  * Fix build with WITH_PYMALLOC_RADIX_TREE=0 (needed for ia64).
+
+ -- Matthias Klose <doko@debian.org>  Fri, 08 Dec 2023 17:20:54 +0100
+
+python3.12 (3.12.1-1) unstable; urgency=high
+
+  * Python 3.12.1 release.
+    - Fix gh-105716, breaking greenlet/eventlet.
+  * Update symbols files.
+  * Add platform triplets for x86_64 GNU/Hurd (Samuel Thibault). 
+    Addresses: #1055960.
+
+ -- Matthias Klose <doko@debian.org>  Fri, 08 Dec 2023 10:36:47 +0100
+
+python3.12 (3.12.0-7) unstable; urgency=medium
+
+  * Update to the 3.12 branch 2023-12-02.
+  * Identify as version "3.12.0" instead of "3.12.0+", confusing some
+    third party packages.
+  * Remove references to the avr architecture. Closes: #1056761.
+  * Fix more shebangs. Closes: #1057192.
+
+ -- Matthias Klose <doko@debian.org>  Sat, 02 Dec 2023 13:35:02 +0100
+
+python3.12 (3.12.0-6) unstable; urgency=medium
+
+  * Fix syntax error in the python3.12-dbg-config script.
+
+ -- Matthias Klose <doko@debian.org>  Sun, 19 Nov 2023 12:32:56 +0100
+
+python3.12 (3.12.0-5) unstable; urgency=medium
+
+  * libpython3.12-testsuite: Don't attempt to byte-compile files name
+    badsyntax_*. Update path for tokenizedata's bad_coding samples.
+  * libpython3.12-testsuite: Ignore warnings during byte compilation.
+    Closes: #1040279.
+  * Replace (currently disabled) hurd_kfreebsd_thread_native_id.diff with
+    simply ignoring the relevant symbol on non-Linux. Closes: #1055820.
+
+ -- Stefano Rivera <stefanor@debian.org>  Sun, 12 Nov 2023 15:37:07 +0200
+
+python3.12 (3.12.0-4) unstable; urgency=medium
+
+  * Add breaks/replaces for typinganndata move. Closes: #1055680.
+
+ -- Matthias Klose <doko@debian.org>  Fri, 10 Nov 2023 12:33:26 +0100
+
+python3.12 (3.12.0-3) unstable; urgency=medium
+
+  * Update to the 3.12 branch 2023-11-09.
+
+  [ Stefano Rivera ]
+  * Add myself as an uploader.
+  * Depend on netbase in libpython3.12-stdlib. Closes: #1055172.
+
+  [ Matthias Klose ]
+  * Fix some lintian warnings.
+  * Add loong64 to the multiarch header file. Closes: #1053835.
+
+ -- Matthias Klose <doko@debian.org>  Thu, 09 Nov 2023 11:45:17 +0100
 
 python3.12 (3.12.0-1) unstable; urgency=medium
 
