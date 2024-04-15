@@ -1361,7 +1361,7 @@ sys_set_asyncgen_hooks(PyObject *self, PyObject *args, PyObject *kw)
 }
 
 PyDoc_STRVAR(set_asyncgen_hooks_doc,
-"set_asyncgen_hooks(* [, firstiter] [, finalizer])\n\
+"set_asyncgen_hooks([firstiter] [, finalizer])\n\
 \n\
 Set a finalizer for async generators objects."
 );
@@ -3466,7 +3466,9 @@ _PySys_UpdateConfig(PyThreadState *tstate)
     if (config->pycache_prefix != NULL) {
         SET_SYS_FROM_WSTR("pycache_prefix", config->pycache_prefix);
     } else {
-        PyDict_SetItemString(sysdict, "pycache_prefix", Py_None);
+        if (PyDict_SetItemString(sysdict, "pycache_prefix", Py_None) < 0) {
+            return -1;
+        }
     }
 
     COPY_LIST("argv", config->argv);
@@ -3480,7 +3482,9 @@ _PySys_UpdateConfig(PyThreadState *tstate)
         SET_SYS_FROM_WSTR("_stdlib_dir", stdlibdir);
     }
     else {
-        PyDict_SetItemString(sysdict, "_stdlib_dir", Py_None);
+        if (PyDict_SetItemString(sysdict, "_stdlib_dir", Py_None) < 0) {
+            return -1;
+        }
     }
 
 #undef SET_SYS_FROM_WSTR
@@ -3490,6 +3494,9 @@ _PySys_UpdateConfig(PyThreadState *tstate)
     // sys.flags
     PyObject *flags = _PySys_GetObject(interp, "flags"); // borrowed ref
     if (flags == NULL) {
+        if (!_PyErr_Occurred(tstate)) {
+            _PyErr_SetString(tstate, PyExc_RuntimeError, "lost sys.flags");
+        }
         return -1;
     }
     if (set_flags_from_config(interp, flags) < 0) {

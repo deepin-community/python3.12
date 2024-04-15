@@ -18,7 +18,7 @@ Forwarded: no
  
 --- a/Makefile.pre.in
 +++ b/Makefile.pre.in
-@@ -2306,8 +2306,10 @@ libinstall:	all $(srcdir)/Modules/xxmodu
+@@ -2328,8 +2328,10 @@ libinstall:	all $(srcdir)/Modules/xxmodu
  			esac; \
  		done; \
  	done
@@ -33,7 +33,7 @@ Forwarded: no
  	-PYTHONPATH=$(DESTDIR)$(LIBDEST) $(RUNSHARED) \
 --- a/configure.ac
 +++ b/configure.ac
-@@ -161,7 +161,7 @@ AC_ARG_WITH(
+@@ -164,7 +164,7 @@ AC_ARG_WITH([build-python],
      dnl Build Python interpreter is used for regeneration and freezing.
      ac_cv_prog_PYTHON_FOR_REGEN=$with_build_python
      PYTHON_FOR_FREEZE="$with_build_python"

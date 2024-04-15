@@ -100,7 +100,7 @@ ifneq (,$(filter valgrind, $(shell dpkg-query --show -f '$${Depends}\n' valgrind
 endif
 
 VER=3.12
-SVER=3.12.0
+SVER=3.12.1
 NVER=3.13
 PVER=python$(VER)
 EXT_VER=$(subst .,,$(VER))
@@ -192,6 +192,7 @@ OPT_PIE_CFLAGS   := $(filter-out -O%,$(DPKG_PIE_CFLAGS)) # default is -O3
 
 ifeq ($(DEB_HOST_ARCH),ia64)
     DPKG_CPPFLAGS += -DWITH_PYMALLOC_RADIX_TREE=0
+    DPKG_PIE_CPPFLAGS += -DWITH_PYMALLOC_RADIX_TREE=0
 endif
 # see #972202, and https://gcc.gnu.org/PR97431
 ifneq (,$(filter $(DEB_HOST_ARCH), hppa sh4))
@@ -248,9 +249,9 @@ sysconfig_substflags = \
 	-e 's/-O3/-O2/g' \
 	-e 's/-fprofile-use *-fprofile-correction//g' \
 	-e 's/-fstack-protector /-fstack-protector-strong /g' \
-	-e "s/-specs=[^ ']*//g" \
-	-e "s/-fdebug-prefix-map=[^ ']*//g" \
-	-e "s/-ffile-prefix-map=[^ ']*//g" \
+	-e "s/-specs=[^ '\"]*//g" \
+	-e "s/-fdebug-prefix-map=[^ '\"]*//g" \
+	-e "s/-ffile-prefix-map=[^ '\"]*//g" \
 	-e 's/-Wl,-z,relro//g' \
 	-e 's,^RUNSHARED *=.*,RUNSHARED=,' \
 	-e '/BLDLIBRARY/s/-L\. //'
@@ -444,7 +445,7 @@ common_configure_args = \
 #common_configure_args += \
 #		--without-builtin-hashlib-hashes
 
-ifneq (,$(filter $(DEB_HOST_ARCH), avr32 or1k))
+ifneq (,$(filter $(DEB_HOST_ARCH), or1k))
   common_configure_args += --without-ffi
 else
   common_configure_args += --with-system-ffi
@@ -601,11 +602,11 @@ endif
 ifneq (,$(filter $(DEB_HOST_ARCH),arm64))
   TEST_EXCLUDES += test_faulthandler
 endif
-ifneq (,$(filter $(DEB_HOST_ARCH), arm avr32))
+ifneq (,$(filter $(DEB_HOST_ARCH), arm))
   TEST_EXCLUDES += test_ctypes
 endif
 TEST_EXCLUDES += test_socket
-ifneq (,$(filter $(DEB_HOST_ARCH), arm armel avr32 m68k))
+ifneq (,$(filter $(DEB_HOST_ARCH), arm armel m68k))
   ifeq ($(on_buildd),yes)
     TEST_EXCLUDES += test_compiler
   endif
@@ -720,7 +721,7 @@ endif
 stamps/stamp-pybench:
 	echo "pybench run disabled for this build" > $(buildd_static)/pybench.log
 
-#ifeq (,$(filter $(DEB_HOST_ARCH), arm armel avr32 hppa mips mipsel mips64 mips64el m68k))
+#ifeq (,$(filter $(DEB_HOST_ARCH), arm armel hppa mips mipsel mips64 mips64el m68k))
   pybench_options = -C 2 -n 5 -w 4
 #endif
 
@@ -1129,7 +1130,7 @@ endif
 	: # The test framework into $(p_lbase)
 	$(dh_compat2) dh_movefiles -p$(p_lbase) --sourcedir=$(d) \
 		$(scriptdir)/test/{libregrtest,support} \
-		$(scriptdir)/test/{ann_module,ann_module2,ann_module3}.py \
+		$(scriptdir)/test/typinganndata \
 		$(scriptdir)/test/{regrtest,test_support,__init__,__main__}.py
 
 	: # The complete testsuite into $(p_ltst)
@@ -1171,26 +1172,6 @@ endif
 		usr/lib/python$(VER)/idlelib
 	cp -p debian/idle-$(PVER).1 $(d_idle)/usr/share/man/man1/
 
-	: # Replace all '#!' calls to python with $(PY_INTERPRETER)
-	: # and make them executable
-	for p in $(shell dh_listpackages); do \
-	[ -d debian/$$p ] || continue; \
-	for i in `find debian/$$p -type f`; do \
-	  sed '1s,#!.*python[^ ]*\(.*\),#! $(PY_INTERPRETER)\1,' \
-		$$i > $$i.temp; \
-	  if cmp --quiet $$i $$i.temp; then \
-	    rm -f $$i.temp; \
-	  else \
-	    if [ ! -x $$i ]; then \
-	      echo "fixed x file permissions: $$i"; \
-	    fi; \
-	    mv -f $$i.temp $$i; \
-	    chmod 755 $$i; \
-	    echo "fixed interpreter: $$i"; \
-	  fi; \
-	done; \
-	done
-
 	: # Move the docs into $(p_base)'s /usr/share/doc/$(PVER) directory,
 	: # all other packages only have a copyright file.
 	dh_installdocs -p$(p_base) \
@@ -1202,7 +1183,7 @@ endif
 
 	: # IDLE has its own changelogs, docs...
 	dh_installchangelogs -p$(p_idle) Lib/idlelib/ChangeLog
-	dh_installdocs -p$(p_idle) Lib/idlelib/{NEWS,README,TODO,extend}.txt
+	dh_installdocs -p$(p_idle) Lib/idlelib/{NEWS2x,News3,README,TODO,extend}.txt
 
 	mkdir -p $(d_idle)/usr/share/applications
 	cp -p debian/idle.desktop \
@@ -1237,6 +1218,26 @@ endif
 	mkdir -p $(d)/usr/lib/python3/dist-packages
 	(cd $(d) && tar cf - .) | (cd $(d_base) && tar xpf -)
 	rm -f $(d_base)/usr/bin/python
+
+	: # Replace all '#!' calls to python with $(PY_INTERPRETER)
+	: # and make them executable
+	for p in $(shell dh_listpackages); do \
+	[ -d debian/$$p ] || continue; \
+	for i in `find debian/$$p -type f`; do \
+	  sed '1s,#!.*python[^ ]*\(.*\),#! $(PY_INTERPRETER)\1,' \
+		$$i > $$i.temp; \
+	  if cmp --quiet $$i $$i.temp; then \
+	    rm -f $$i.temp; \
+	  else \
+	    if [ ! -x $$i ]; then \
+	      echo "fixed x file permissions: $$i"; \
+	    fi; \
+	    mv -f $$i.temp $$i; \
+	    chmod 755 $$i; \
+	    echo "fixed interpreter: $$i"; \
+	  fi; \
+	done; \
+	done
 
 	: # Install menu icon
 	dh_installdirs -p$(p_base) usr/share/pixmaps
@@ -1597,6 +1598,10 @@ stamps/stamp-patch:
 	  Python/mysnprintf.c Python/pyctype.c
 
 	ln -sf site-packages Lib/dist-packages
+
+	touch Lib/test/certdata/nullcert.pem
+	touch Lib/test/libregrtest/__init__.py
+	touch Lib/test/tokenizedata/__init__.py
 
 	mv stamps/pxx $@
 

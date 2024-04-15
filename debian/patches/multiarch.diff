@@ -22,7 +22,7 @@ Forwarded: no
      if os.name == 'posix':
 --- a/Makefile.pre.in
 +++ b/Makefile.pre.in
-@@ -1374,6 +1374,7 @@ Modules/signalmodule.o: $(srcdir)/Module
+@@ -1377,6 +1377,7 @@ Modules/signalmodule.o: $(srcdir)/Module
  
  Python/dynload_shlib.o: $(srcdir)/Python/dynload_shlib.c Makefile
  	$(CC) -c $(PY_CORE_CFLAGS) \

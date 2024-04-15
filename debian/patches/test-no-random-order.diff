@@ -1,5 +1,6 @@
 Description: Don't run the test suite in random order.
-Forwarded: not-needed.
+ Can be dropped in 3.13.
+Bug-Upstream: https://github.com/python/cpython/issues/110164
 
 --- a/Tools/scripts/run_tests.py
 +++ b/Tools/scripts/run_tests.py

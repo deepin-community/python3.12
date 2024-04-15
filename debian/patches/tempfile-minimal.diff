@@ -4,8 +4,6 @@ Description: Debian: Degrade tempfile gracefully without shutil
 
 Forwarded: not-needed
 
-Index: b/Lib/tempfile.py
-===================================================================
 --- a/Lib/tempfile.py
 +++ b/Lib/tempfile.py
 @@ -40,7 +40,146 @@ import functools as _functools
@@ -156,7 +154,7 @@ Index: b/Lib/tempfile.py
  import errno as _errno
  from random import Random as _Random
  import sys as _sys
-@@ -900,7 +1039,7 @@ class TemporaryDirectory:
+@@ -927,7 +1066,7 @@ class TemporaryDirectory:
                  if not ignore_errors:
                      raise
  

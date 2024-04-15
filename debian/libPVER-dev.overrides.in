@@ -4,3 +4,6 @@ lib@PVER@-dev binary: arch-dependent-file-not-in-arch-specific-directory
 
 # lintian needs an update for 3.8
 lib@PVER@-dev binary: package-contains-python-header-in-incorrect-directory
+
+# no, it's not unusual
+lib@PVER@-dev binary: unusual-interpreter
