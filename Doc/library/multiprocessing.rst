@@ -1,5 +1,5 @@
-:mod:`multiprocessing` --- Process-based parallelism
-====================================================
+:mod:`!multiprocessing` --- Process-based parallelism
+=====================================================
 
 .. module:: multiprocessing
    :synopsis: Process-based parallelism.
@@ -150,17 +150,17 @@ to start a process.  These *start methods* are
     over Unix pipes such as Linux.
 
 
-.. versionchanged:: 3.8
-
-   On macOS, the *spawn* start method is now the default.  The *fork* start
-   method should be considered unsafe as it can lead to crashes of the
-   subprocess as macOS system libraries may start threads. See :issue:`33725`.
-
 .. versionchanged:: 3.4
    *spawn* added on all POSIX platforms, and *forkserver* added for
    some POSIX platforms.
    Child processes no longer inherit all of the parents inheritable
    handles on Windows.
+
+.. versionchanged:: 3.8
+
+   On macOS, the *spawn* start method is now the default.  The *fork* start
+   method should be considered unsafe as it can lead to crashes of the
+   subprocess as macOS system libraries may start threads. See :issue:`33725`.
 
 On POSIX using the *spawn* or *forkserver* start methods will also
 start a *resource tracker* process which tracks the unlinked named
@@ -519,7 +519,7 @@ The :mod:`multiprocessing` package mostly replicates the API of the
    to the process.
 
    .. versionchanged:: 3.3
-      Added the *daemon* argument.
+      Added the *daemon* parameter.
 
    .. method:: run()
 
@@ -649,8 +649,8 @@ The :mod:`multiprocessing` package mostly replicates the API of the
 
    .. method:: terminate()
 
-      Terminate the process.  On POSIX this is done using the ``SIGTERM`` signal;
-      on Windows :c:func:`TerminateProcess` is used.  Note that exit handlers and
+      Terminate the process.  On POSIX this is done using the :py:const:`~signal.SIGTERM` signal;
+      on Windows :c:func:`!TerminateProcess` is used.  Note that exit handlers and
       finally clauses, etc., will not be executed.
 
       Note that descendant processes of the process will *not* be terminated --
@@ -1077,13 +1077,13 @@ Miscellaneous
    The return value can be ``'fork'``, ``'spawn'``, ``'forkserver'``
    or ``None``.  See :ref:`multiprocessing-start-methods`.
 
-.. versionchanged:: 3.8
-
-   On macOS, the *spawn* start method is now the default.  The *fork* start
-   method should be considered unsafe as it can lead to crashes of the
-   subprocess. See :issue:`33725`.
-
    .. versionadded:: 3.4
+
+   .. versionchanged:: 3.8
+
+      On macOS, the *spawn* start method is now the default.  The *fork* start
+      method should be considered unsafe as it can lead to crashes of the
+      subprocess. See :issue:`33725`.
 
 .. function:: set_executable(executable)
 
@@ -1238,8 +1238,7 @@ Connection objects are usually created using
       Connection objects themselves can now be transferred between processes
       using :meth:`Connection.send` and :meth:`Connection.recv`.
 
-   .. versionadded:: 3.3
-      Connection objects now support the context management protocol -- see
+      Connection objects also now support the context management protocol -- see
       :ref:`typecontextmanager`.  :meth:`~contextmanager.__enter__` returns the
       connection object, and :meth:`~contextmanager.__exit__` calls :meth:`close`.
 
@@ -2243,11 +2242,11 @@ with the :class:`Pool` class.
       as CPython does not assure that the finalizer of the pool will be called
       (see :meth:`object.__del__` for more information).
 
-   .. versionadded:: 3.2
-      *maxtasksperchild*
+   .. versionchanged:: 3.2
+      Added the *maxtasksperchild* parameter.
 
-   .. versionadded:: 3.4
-      *context*
+   .. versionchanged:: 3.4
+      Added the *context* parameter.
 
    .. note::
 
@@ -2369,7 +2368,7 @@ with the :class:`Pool` class.
       Wait for the worker processes to exit.  One must call :meth:`close` or
       :meth:`terminate` before using :meth:`join`.
 
-   .. versionadded:: 3.3
+   .. versionchanged:: 3.3
       Pool objects now support the context management protocol -- see
       :ref:`typecontextmanager`.  :meth:`~contextmanager.__enter__` returns the
       pool object, and :meth:`~contextmanager.__exit__` calls :meth:`terminate`.
@@ -2473,9 +2472,9 @@ multiple connections at the same time.
    generally be omitted since it can usually be inferred from the format of
    *address*. (See :ref:`multiprocessing-address-formats`)
 
-   If *authkey* is given and not None, it should be a byte string and will be
+   If *authkey* is given and not ``None``, it should be a byte string and will be
    used as the secret key for an HMAC-based authentication challenge. No
-   authentication is done if *authkey* is None.
+   authentication is done if *authkey* is ``None``.
    :exc:`~multiprocessing.AuthenticationError` is raised if authentication fails.
    See :ref:`multiprocessing-auth-keys`.
 
@@ -2508,9 +2507,9 @@ multiple connections at the same time.
    to the :meth:`~socket.socket.listen` method of the socket once it has been
    bound.
 
-   If *authkey* is given and not None, it should be a byte string and will be
+   If *authkey* is given and not ``None``, it should be a byte string and will be
    used as the secret key for an HMAC-based authentication challenge. No
-   authentication is done if *authkey* is None.
+   authentication is done if *authkey* is ``None``.
    :exc:`~multiprocessing.AuthenticationError` is raised if authentication fails.
    See :ref:`multiprocessing-auth-keys`.
 
@@ -2538,7 +2537,7 @@ multiple connections at the same time.
       The address from which the last accepted connection came.  If this is
       unavailable then it is ``None``.
 
-   .. versionadded:: 3.3
+   .. versionchanged:: 3.3
       Listener objects now support the context management protocol -- see
       :ref:`typecontextmanager`.  :meth:`~contextmanager.__enter__` returns the
       listener object, and :meth:`~contextmanager.__exit__` calls :meth:`close`.
@@ -2969,7 +2968,7 @@ Beware of replacing :data:`sys.stdin` with a "file like object"
 The *spawn* and *forkserver* start methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-There are a few extra restriction which don't apply to the *fork*
+There are a few extra restrictions which don't apply to the *fork*
 start method.
 
 More picklability

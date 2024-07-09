@@ -1,5 +1,5 @@
-:mod:`resource` --- Resource usage information
-==============================================
+:mod:`!resource` --- Resource usage information
+===============================================
 
 .. module:: resource
    :platform: Unix
@@ -176,6 +176,8 @@ platform.
 .. data:: RLIMIT_VMEM
 
    The largest area of mapped memory which the process may occupy.
+
+   .. availability:: FreeBSD >= 11.
 
 
 .. data:: RLIMIT_AS

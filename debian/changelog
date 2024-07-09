@@ -1,3 +1,10 @@
+python3.12 (3.12.4-0deepin1) unstable; urgency=medium
+
+  * Python 3.12.4 release.
+  * Refresh patches.
+
+ -- Tianyu Chen <sweetyfish@deepin.org>  Tue, 09 Jul 2024 11:31:23 +0200
+
 python3.12 (3.12.2-1) unstable; urgency=medium
 
   * Python 3.12.2 release.

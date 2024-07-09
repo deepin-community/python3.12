@@ -1,5 +1,5 @@
-:mod:`random` --- Generate pseudo-random numbers
-================================================
+:mod:`!random` --- Generate pseudo-random numbers
+=================================================
 
 .. module:: random
    :synopsis: Generate pseudo-random numbers with various common distributions.
@@ -55,7 +55,7 @@ from sources provided by the operating system.
 
 
    `Complementary-Multiply-with-Carry recipe
-   <https://code.activestate.com/recipes/576707/>`_ for a compatible alternative
+   <https://code.activestate.com/recipes/576707-long-period-random-number-generator/>`_ for a compatible alternative
    random number generator with a long period and comparatively simple update
    operations.
 
@@ -301,7 +301,8 @@ be found in any statistics text.
    ``a <= b`` and ``b <= N <= a`` for ``b < a``.
 
    The end-point value ``b`` may or may not be included in the range
-   depending on floating-point rounding in the equation ``a + (b-a) * random()``.
+   depending on floating-point rounding in the expression
+   ``a + (b-a) * random()``.
 
 
 .. function:: triangular(low, high, mode)
