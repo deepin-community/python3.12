@@ -12,6 +12,8 @@ import time
 sys.path.append(os.path.abspath('tools/extensions'))
 sys.path.append(os.path.abspath('includes'))
 
+from pyspecific import SOURCE_URI
+
 # General configuration
 # ---------------------
 
@@ -24,6 +26,7 @@ extensions = [
     'pyspecific',
     'sphinx.ext.coverage',
     'sphinx.ext.doctest',
+    'sphinx.ext.extlinks',
 ]
 
 # Skip if downstream redistributors haven't installed it
@@ -58,6 +61,10 @@ copyright = f"2001-{time.strftime('%Y')}, Python Software Foundation"
 import patchlevel
 version, release = patchlevel.get_version_info()
 
+rst_epilog = f"""
+.. |python_version_literal| replace:: ``Python {version}``
+"""
+
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
 today = ''
@@ -89,10 +96,13 @@ nitpick_ignore = [
     ('c:func', 'dlopen'),
     ('c:func', 'exec'),
     ('c:func', 'fcntl'),
+    ('c:func', 'flock'),
     ('c:func', 'fork'),
     ('c:func', 'free'),
     ('c:func', 'gettimeofday'),
     ('c:func', 'gmtime'),
+    ('c:func', 'grantpt'),
+    ('c:func', 'ioctl'),
     ('c:func', 'localeconv'),
     ('c:func', 'localtime'),
     ('c:func', 'main'),
@@ -255,6 +265,7 @@ nitpick_ignore += [
     ('py:attr', '__annotations__'),
     ('py:meth', '__missing__'),
     ('py:attr', '__wrapped__'),
+    ('py:attr', 'decimal.Context.clamp'),
     ('py:meth', 'index'),  # list.index, tuple.index, etc.
 ]
 
@@ -272,8 +283,8 @@ smartquotes_excludes = {
     'languages': ['ja', 'fr', 'zh_TW', 'zh_CN'], 'builders': ['man', 'text'],
 }
 
-# Avoid a warning with Sphinx >= 2.0
-master_doc = 'contents'
+# Avoid a warning with Sphinx >= 4.0
+root_doc = 'contents'
 
 # Allow translation of index directives
 gettext_additional_targets = [
@@ -347,6 +358,8 @@ htmlhelp_basename = 'python' + release.replace('.', '')
 # Split the index
 html_split_index = True
 
+# Split pot files one per reST file
+gettext_compact = False
 
 # Options for LaTeX output
 # ------------------------
@@ -407,6 +420,10 @@ latex_appendices = ['glossary', 'about', 'license', 'copyright']
 
 epub_author = 'Python Documentation Authors'
 epub_publisher = 'Python Software Foundation'
+
+# index pages are not valid xhtml
+# https://github.com/sphinx-doc/sphinx/issues/12359
+epub_use_index = False
 
 # Options for the coverage checker
 # --------------------------------
@@ -491,6 +508,19 @@ linkcheck_ignore = [
     r'https://unix.org/version2/whatsnew/lp64_wp.html',
 ]
 
+# Options for sphinx.ext.extlinks
+# -------------------------------
+
+# This config is a dictionary of external sites,
+# mapping unique short aliases to a base URL and a prefix.
+# https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
+extlinks = {
+    "cve": ("https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-%s", "CVE-%s"),
+    "cwe": ("https://cwe.mitre.org/data/definitions/%s.html", "CWE-%s"),
+    "pypi": ("https://pypi.org/project/%s/", "%s"),
+    "source": (SOURCE_URI, "%s"),
+}
+extlinks_detect_hardcoded_links = True
 
 # Options for extensions
 # ----------------------

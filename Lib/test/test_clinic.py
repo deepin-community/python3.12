@@ -21,6 +21,20 @@ with test_tools.imports_under_tool('clinic'):
     from clinic import DSLParser
 
 
+def restore_dict(converters, old_converters):
+    converters.clear()
+    converters.update(old_converters)
+
+
+def save_restore_converters(testcase):
+    testcase.addCleanup(restore_dict, clinic.converters,
+                        clinic.converters.copy())
+    testcase.addCleanup(restore_dict, clinic.legacy_converters,
+                        clinic.legacy_converters.copy())
+    testcase.addCleanup(restore_dict, clinic.return_converters,
+                        clinic.return_converters.copy())
+
+
 class _ParserBase(TestCase):
     maxDiff = None
 
@@ -107,6 +121,7 @@ class FakeClinic:
 
 class ClinicWholeFileTest(_ParserBase):
     def setUp(self):
+        save_restore_converters(self)
         self.clinic = clinic.Clinic(clinic.CLanguage(None), filename="test.c")
 
     def expect_failure(self, raw):
@@ -1332,6 +1347,28 @@ class ClinicParserTest(_ParserBase):
                 parser_decl = p.simple_declaration(in_parser=True)
                 self.assertNotIn("Py_UNUSED", parser_decl)
 
+    def test_kind_defining_class(self):
+        function = self.parse_function("""
+            module m
+            class m.C "PyObject *" ""
+            m.C.meth
+                cls: defining_class
+        """, signatures_in_block=3, function_index=2)
+        p = function.parameters['cls']
+        self.assertEqual(p.kind, inspect.Parameter.POSITIONAL_ONLY)
+
+    def test_disallow_defining_class_at_module_level(self):
+        expected_error_msg = (
+            "Error on line 0:\n"
+            "A 'defining_class' parameter cannot be defined at module level.\n"
+        )
+        out = self.parse_function_should_fail("""
+            module m
+            m.func
+                cls: defining_class
+        """)
+        self.assertEqual(out, expected_error_msg)
+
     def parse(self, text):
         c = FakeClinic()
         parser = DSLParser(c)
@@ -1368,6 +1405,9 @@ class ClinicParserTest(_ParserBase):
 class ClinicExternalTest(TestCase):
     maxDiff = None
     clinic_py = os.path.join(test_tools.toolsdir, "clinic", "clinic.py")
+
+    def setUp(self):
+        save_restore_converters(self)
 
     def _do_test(self, *args, expect_success=True):
         with subprocess.Popen(

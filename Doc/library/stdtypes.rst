@@ -1491,13 +1491,12 @@ objects that compare equal might have different :attr:`~range.start`,
    sequence of values they define (instead of comparing based on
    object identity).
 
-.. versionadded:: 3.3
-   The :attr:`~range.start`, :attr:`~range.stop` and :attr:`~range.step`
+   Added the :attr:`~range.start`, :attr:`~range.stop` and :attr:`~range.step`
    attributes.
 
 .. seealso::
 
-   * The `linspace recipe <https://code.activestate.com/recipes/579000/>`_
+   * The `linspace recipe <https://code.activestate.com/recipes/579000-equally-spaced-numbers-linspace/>`_
      shows how to implement a lazy version of range suitable for floating
      point applications.
 
@@ -4557,7 +4556,7 @@ can be used interchangeably to index the same dictionary entry.
 
       Return a shallow copy of the dictionary.
 
-   .. classmethod:: fromkeys(iterable[, value])
+   .. classmethod:: fromkeys(iterable, value=None)
 
       Create a new dictionary with keys from *iterable* and values set to *value*.
 
@@ -4567,7 +4566,7 @@ can be used interchangeably to index the same dictionary entry.
       such as an empty list.  To get distinct values, use a :ref:`dict
       comprehension <dict>` instead.
 
-   .. method:: get(key[, default])
+   .. method:: get(key, default=None)
 
       Return the value for *key* if *key* is in the dictionary, else *default*.
       If *default* is not given, it defaults to ``None``, so that this method
@@ -4609,7 +4608,7 @@ can be used interchangeably to index the same dictionary entry.
 
       .. versionadded:: 3.8
 
-   .. method:: setdefault(key[, default])
+   .. method:: setdefault(key, default=None)
 
       If *key* is in the dictionary, return its value.  If not, insert *key*
       with a value of *default* and return *default*.  *default* defaults to
@@ -5447,10 +5446,10 @@ The NotImplemented Object
 
 This object is returned from comparisons and binary operations when they are
 asked to operate on types they don't support. See :ref:`comparisons` for more
-information.  There is exactly one ``NotImplemented`` object.
-``type(NotImplemented)()`` produces the singleton instance.
+information.  There is exactly one :data:`NotImplemented` object.
+:code:`type(NotImplemented)()` produces the singleton instance.
 
-It is written as ``NotImplemented``.
+It is written as :code:`NotImplemented`.
 
 
 .. _typesinternal:
@@ -5551,8 +5550,7 @@ a string to a binary integer or a binary integer to a string in linear time,
 have sub-quadratic complexity. Converting a large value such as ``int('1' *
 500_000)`` can take over a second on a fast CPU.
 
-Limiting conversion size offers a practical way to avoid `CVE-2020-10735
-<https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-10735>`_.
+Limiting conversion size offers a practical way to avoid :cve:`2020-10735`.
 
 The limit is applied to the number of digit characters in the input or output
 string when a non-linear conversion algorithm would be involved.  Underscores

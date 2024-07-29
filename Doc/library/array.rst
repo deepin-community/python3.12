@@ -1,5 +1,5 @@
-:mod:`array` --- Efficient arrays of numeric values
-===================================================
+:mod:`!array` --- Efficient arrays of numeric values
+====================================================
 
 .. module:: array
    :synopsis: Space efficient arrays of uniformly typed numeric values.
@@ -273,4 +273,3 @@ Examples::
 
    `NumPy <https://numpy.org/>`_
       The NumPy package defines another array type.
-

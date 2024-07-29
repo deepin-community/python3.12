@@ -2,10 +2,11 @@ import contextlib
 import collections
 import collections.abc
 from collections import defaultdict
-from functools import lru_cache, wraps
+from functools import lru_cache, wraps, reduce
 import gc
 import inspect
 import itertools
+import operator
 import pickle
 import re
 import sys
@@ -46,7 +47,7 @@ import weakref
 import types
 
 from test.support import captured_stderr, cpython_only
-from test.typinganndata import mod_generics_cache, _typed_dict_helper
+from test.typinganndata import ann_module695, mod_generics_cache, _typed_dict_helper
 
 
 CANNOT_SUBCLASS_TYPE = 'Cannot subclass special typing classes'
@@ -139,6 +140,26 @@ class AnyTests(BaseTestCase):
         self.assertIsInstance(ms, MockSomething)
         self.assertIsInstance(ms, Something)
         self.assertIsInstance(ms, Mock)
+
+    def test_subclassing_with_custom_constructor(self):
+        class Sub(Any):
+            def __init__(self, *args, **kwargs): pass
+        # The instantiation must not fail.
+        Sub(0, s="")
+
+    def test_multiple_inheritance_with_custom_constructors(self):
+        class Foo:
+            def __init__(self, x):
+                self.x = x
+
+        class Bar(Any, Foo):
+            def __init__(self, x, y):
+                self.y = y
+                super().__init__(x)
+
+        b = Bar(1, 2)
+        self.assertEqual(b.x, 1)
+        self.assertEqual(b.y, 2)
 
     def test_cannot_instantiate(self):
         with self.assertRaises(TypeError):
@@ -958,6 +979,38 @@ class UnpackTests(BaseTestCase):
         self.assertEqual(repr(foo.__annotations__['kwargs']),
                          f"typing.Unpack[{__name__}.Movie]")
 
+    def test_builtin_tuple(self):
+        Ts = TypeVarTuple("Ts")
+
+        class Old(Generic[*Ts]): ...
+        class New[*Ts]: ...
+
+        PartOld = Old[int, *Ts]
+        self.assertEqual(PartOld[str].__args__, (int, str))
+        self.assertEqual(PartOld[*tuple[str]].__args__, (int, str))
+        self.assertEqual(PartOld[*Tuple[str]].__args__, (int, str))
+        self.assertEqual(PartOld[Unpack[tuple[str]]].__args__, (int, str))
+        self.assertEqual(PartOld[Unpack[Tuple[str]]].__args__, (int, str))
+
+        PartNew = New[int, *Ts]
+        self.assertEqual(PartNew[str].__args__, (int, str))
+        self.assertEqual(PartNew[*tuple[str]].__args__, (int, str))
+        self.assertEqual(PartNew[*Tuple[str]].__args__, (int, str))
+        self.assertEqual(PartNew[Unpack[tuple[str]]].__args__, (int, str))
+        self.assertEqual(PartNew[Unpack[Tuple[str]]].__args__, (int, str))
+
+    def test_unpack_wrong_type(self):
+        Ts = TypeVarTuple("Ts")
+        class Gen[*Ts]: ...
+        PartGen = Gen[int, *Ts]
+
+        bad_unpack_param = re.escape("Unpack[...] must be used with a tuple type")
+        with self.assertRaisesRegex(TypeError, bad_unpack_param):
+            PartGen[Unpack[list[int]]]
+        with self.assertRaisesRegex(TypeError, bad_unpack_param):
+            PartGen[Unpack[List[int]]]
+
+
 class TypeVarTupleTests(BaseTestCase):
 
     def assertEndsWith(self, string, tail):
@@ -1769,6 +1822,26 @@ class UnionTests(BaseTestCase):
         u = Union[int, float]
         v = Union[u, Employee]
         self.assertEqual(v, Union[int, float, Employee])
+
+    def test_union_of_unhashable(self):
+        class UnhashableMeta(type):
+            __hash__ = None
+
+        class A(metaclass=UnhashableMeta): ...
+        class B(metaclass=UnhashableMeta): ...
+
+        self.assertEqual(Union[A, B].__args__, (A, B))
+        union1 = Union[A, B]
+        with self.assertRaises(TypeError):
+            hash(union1)
+
+        union2 = Union[int, B]
+        with self.assertRaises(TypeError):
+            hash(union2)
+
+        union3 = Union[A, int]
+        with self.assertRaises(TypeError):
+            hash(union3)
 
     def test_repr(self):
         self.assertEqual(repr(Union), 'typing.Union')
@@ -4181,6 +4254,16 @@ class GenericTests(BaseTestCase):
         c.bar = 'abc'
         self.assertEqual(c.__dict__, {'bar': 'abc'})
 
+    def test_setattr_exceptions(self):
+        class Immutable[T]:
+            def __setattr__(self, key, value):
+                raise RuntimeError("immutable")
+
+        # gh-115165: This used to cause RuntimeError to be raised
+        # when we tried to set `__orig_class__` on the `Immutable` instance
+        # returned by the `Immutable[int]()` call
+        self.assertIsInstance(Immutable[int](), Immutable)
+
     def test_subscripted_generics_as_proxies(self):
         T = TypeVar('T')
         class C(Generic[T]):
@@ -4447,6 +4530,30 @@ class GenericTests(BaseTestCase):
             get_type_hints(f, globals(), locals()),
             {'x': list[list[ForwardRef('X')]]}
         )
+
+    def test_pep695_generic_with_future_annotations(self):
+        hints_for_A = get_type_hints(ann_module695.A)
+        A_type_params = ann_module695.A.__type_params__
+        self.assertIs(hints_for_A["x"], A_type_params[0])
+        self.assertEqual(hints_for_A["y"].__args__[0], Unpack[A_type_params[1]])
+        self.assertIs(hints_for_A["z"].__args__[0], A_type_params[2])
+
+        hints_for_B = get_type_hints(ann_module695.B)
+        self.assertEqual(hints_for_B.keys(), {"x", "y", "z"})
+        self.assertEqual(
+            set(hints_for_B.values()) ^ set(ann_module695.B.__type_params__),
+            set()
+        )
+
+        hints_for_generic_function = get_type_hints(ann_module695.generic_function)
+        func_t_params = ann_module695.generic_function.__type_params__
+        self.assertEqual(
+            hints_for_generic_function.keys(), {"x", "y", "z", "zz", "return"}
+        )
+        self.assertIs(hints_for_generic_function["x"], func_t_params[0])
+        self.assertEqual(hints_for_generic_function["y"], Unpack[func_t_params[1]])
+        self.assertIs(hints_for_generic_function["z"].__origin__, func_t_params[2])
+        self.assertIs(hints_for_generic_function["zz"].__origin__, func_t_params[2])
 
     def test_extended_generic_rules_subclassing(self):
         class T1(Tuple[T, KT]): ...
@@ -5285,10 +5392,8 @@ class OverrideDecoratorTests(BaseTestCase):
         self.assertFalse(hasattr(WithOverride.some, "__override__"))
 
     def test_multiple_decorators(self):
-        import functools
-
         def with_wraps(f):  # similar to `lru_cache` definition
-            @functools.wraps(f)
+            @wraps(f)
             def wrapper(*args, **kwargs):
                 return f(*args, **kwargs)
             return wrapper
@@ -5625,6 +5730,12 @@ class ForwardRefTests(BaseTestCase):
 
         with self.assertRaises(SyntaxError):
             get_type_hints(foo)
+
+    def test_syntax_error_empty_string(self):
+        for form in [typing.List, typing.Set, typing.Type, typing.Deque]:
+            with self.subTest(form=form):
+                with self.assertRaises(SyntaxError):
+                    form['']
 
     def test_name_error(self):
 
@@ -6524,24 +6635,16 @@ class CollectionsAbcTests(BaseTestCase):
         self.assertNotIsInstance(42, typing.Iterator)
 
     def test_awaitable(self):
-        ns = {}
-        exec(
-            "async def foo() -> typing.Awaitable[int]:\n"
-            "    return await AwaitableWrapper(42)\n",
-            globals(), ns)
-        foo = ns['foo']
+        async def foo() -> typing.Awaitable[int]:
+            return await AwaitableWrapper(42)
         g = foo()
         self.assertIsInstance(g, typing.Awaitable)
         self.assertNotIsInstance(foo, typing.Awaitable)
         g.send(None)  # Run foo() till completion, to avoid warning.
 
     def test_coroutine(self):
-        ns = {}
-        exec(
-            "async def foo():\n"
-            "    return\n",
-            globals(), ns)
-        foo = ns['foo']
+        async def foo():
+            return
         g = foo()
         self.assertIsInstance(g, typing.Coroutine)
         with self.assertRaises(TypeError):
@@ -6815,10 +6918,9 @@ class CollectionsAbcTests(BaseTestCase):
             typing.Generator[int, int, int]()
 
     def test_async_generator(self):
-        ns = {}
-        exec("async def f():\n"
-             "    yield 42\n", globals(), ns)
-        g = ns['f']()
+        async def f():
+             yield 42
+        g = f()
         self.assertIsSubclass(type(g), typing.AsyncGenerator)
 
     def test_no_async_generator_instantiation(self):
@@ -6905,9 +7007,8 @@ class CollectionsAbcTests(BaseTestCase):
             def athrow(self, typ, val=None, tb=None):
                 pass
 
-        ns = {}
-        exec('async def g(): yield 0', globals(), ns)
-        g = ns['g']
+        async def g(): yield 0
+
         self.assertIsSubclass(G, typing.AsyncGenerator)
         self.assertIsSubclass(G, typing.AsyncIterable)
         self.assertIsSubclass(G, collections.abc.AsyncGenerator)
@@ -8113,6 +8214,17 @@ class RETests(BaseTestCase):
             self.assertEqual(__name__, 'typing.re')
             self.assertEqual(len(w), 1)
 
+    def test_re_submodule_access_basics(self):
+        with warnings.catch_warnings():
+            warnings.filterwarnings("error", category=DeprecationWarning)
+            from typing import re
+            self.assertIsInstance(re.__doc__, str)
+            self.assertEqual(re.__name__, "typing.re")
+            self.assertIsInstance(re.__dict__, types.MappingProxyType)
+
+        with self.assertWarns(DeprecationWarning):
+            re.Match
+
     def test_cannot_subclass(self):
         with self.assertRaisesRegex(
             TypeError,
@@ -8162,6 +8274,76 @@ class AnnotatedTests(BaseTestCase):
         self.assertEqual(A.__metadata__, (4, 5))
         self.assertEqual(A.__origin__, int)
 
+    def test_deduplicate_from_union(self):
+        # Regular:
+        self.assertEqual(get_args(Annotated[int, 1] | int),
+                         (Annotated[int, 1], int))
+        self.assertEqual(get_args(Union[Annotated[int, 1], int]),
+                         (Annotated[int, 1], int))
+        self.assertEqual(get_args(Annotated[int, 1] | Annotated[int, 2] | int),
+                         (Annotated[int, 1], Annotated[int, 2], int))
+        self.assertEqual(get_args(Union[Annotated[int, 1], Annotated[int, 2], int]),
+                         (Annotated[int, 1], Annotated[int, 2], int))
+        self.assertEqual(get_args(Annotated[int, 1] | Annotated[str, 1] | int),
+                         (Annotated[int, 1], Annotated[str, 1], int))
+        self.assertEqual(get_args(Union[Annotated[int, 1], Annotated[str, 1], int]),
+                         (Annotated[int, 1], Annotated[str, 1], int))
+
+        # Duplicates:
+        self.assertEqual(Annotated[int, 1] | Annotated[int, 1] | int,
+                         Annotated[int, 1] | int)
+        self.assertEqual(Union[Annotated[int, 1], Annotated[int, 1], int],
+                         Union[Annotated[int, 1], int])
+
+        # Unhashable metadata:
+        self.assertEqual(get_args(str | Annotated[int, {}] | Annotated[int, set()] | int),
+                         (str, Annotated[int, {}], Annotated[int, set()], int))
+        self.assertEqual(get_args(Union[str, Annotated[int, {}], Annotated[int, set()], int]),
+                         (str, Annotated[int, {}], Annotated[int, set()], int))
+        self.assertEqual(get_args(str | Annotated[int, {}] | Annotated[str, {}] | int),
+                         (str, Annotated[int, {}], Annotated[str, {}], int))
+        self.assertEqual(get_args(Union[str, Annotated[int, {}], Annotated[str, {}], int]),
+                         (str, Annotated[int, {}], Annotated[str, {}], int))
+
+        self.assertEqual(get_args(Annotated[int, 1] | str | Annotated[str, {}] | int),
+                         (Annotated[int, 1], str, Annotated[str, {}], int))
+        self.assertEqual(get_args(Union[Annotated[int, 1], str, Annotated[str, {}], int]),
+                         (Annotated[int, 1], str, Annotated[str, {}], int))
+
+        import dataclasses
+        @dataclasses.dataclass
+        class ValueRange:
+            lo: int
+            hi: int
+        v = ValueRange(1, 2)
+        self.assertEqual(get_args(Annotated[int, v] | None),
+                         (Annotated[int, v], types.NoneType))
+        self.assertEqual(get_args(Union[Annotated[int, v], None]),
+                         (Annotated[int, v], types.NoneType))
+        self.assertEqual(get_args(Optional[Annotated[int, v]]),
+                         (Annotated[int, v], types.NoneType))
+
+        # Unhashable metadata duplicated:
+        self.assertEqual(Annotated[int, {}] | Annotated[int, {}] | int,
+                         Annotated[int, {}] | int)
+        self.assertEqual(Annotated[int, {}] | Annotated[int, {}] | int,
+                         int | Annotated[int, {}])
+        self.assertEqual(Union[Annotated[int, {}], Annotated[int, {}], int],
+                         Union[Annotated[int, {}], int])
+        self.assertEqual(Union[Annotated[int, {}], Annotated[int, {}], int],
+                         Union[int, Annotated[int, {}]])
+
+    def test_order_in_union(self):
+        expr1 = Annotated[int, 1] | str | Annotated[str, {}] | int
+        for args in itertools.permutations(get_args(expr1)):
+            with self.subTest(args=args):
+                self.assertEqual(expr1, reduce(operator.or_, args))
+
+        expr2 = Union[Annotated[int, 1], str, Annotated[str, {}], int]
+        for args in itertools.permutations(get_args(expr2)):
+            with self.subTest(args=args):
+                self.assertEqual(expr2, Union[args])
+
     def test_specialize(self):
         L = Annotated[List[T], "my decoration"]
         LI = Annotated[List[int], "my decoration"]
@@ -8182,6 +8364,16 @@ class AnnotatedTests(BaseTestCase):
             {Annotated[int, 4, 5], Annotated[int, 4, 5], Annotated[T, 4, 5]},
             {Annotated[int, 4, 5], Annotated[T, 4, 5]}
         )
+        # Unhashable `metadata` raises `TypeError`:
+        a1 = Annotated[int, []]
+        with self.assertRaises(TypeError):
+            hash(a1)
+
+        class A:
+            __hash__ = None
+        a2 = Annotated[int, A()]
+        with self.assertRaises(TypeError):
+            hash(a2)
 
     def test_instantiate(self):
         class C:
@@ -8206,6 +8398,17 @@ class AnnotatedTests(BaseTestCase):
         MyCount = Annotated[typing.Counter[T], "my decoration"]
         self.assertEqual(MyCount([4, 4, 5]), {4: 2, 5: 1})
         self.assertEqual(MyCount[int]([4, 4, 5]), {4: 2, 5: 1})
+
+    def test_instantiate_immutable(self):
+        class C:
+            def __setattr__(self, key, value):
+                raise Exception("should be ignored")
+
+        A = Annotated[C, "a decoration"]
+        # gh-115165: This used to cause RuntimeError to be raised
+        # when we tried to set `__orig_class__` on the `C` instance
+        # returned by the `A()` call
+        self.assertIsInstance(A(), C)
 
     def test_cannot_instantiate_forward(self):
         A = Annotated["int", (5, 6)]
