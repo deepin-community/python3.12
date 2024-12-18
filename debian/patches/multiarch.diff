@@ -7,7 +7,7 @@ Forwarded: no
 
 --- a/Lib/sysconfig.py
 +++ b/Lib/sysconfig.py
-@@ -710,6 +710,12 @@ def _init_config_vars():
+@@ -710,6 +710,12 @@
          # the init-function.
          _CONFIG_VARS['userbase'] = _getuserbase()
  
@@ -22,7 +22,7 @@ Forwarded: no
      if os.name == 'posix':
 --- a/Makefile.pre.in
 +++ b/Makefile.pre.in
-@@ -1377,6 +1377,7 @@ Modules/signalmodule.o: $(srcdir)/Module
+@@ -1379,6 +1379,7 @@
  
  Python/dynload_shlib.o: $(srcdir)/Python/dynload_shlib.c Makefile
  	$(CC) -c $(PY_CORE_CFLAGS) \

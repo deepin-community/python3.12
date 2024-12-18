@@ -1,4 +1,5 @@
-#git-updates.diff
+git-updates.diff
+patchlevel-noplus.diff
 #FIXME deb-setup.diff
 deb-locations.diff
 distutils-install-layout.diff
@@ -19,7 +20,6 @@ multiarch.diff
 test-no-random-order.diff
 tempfile-minimal.diff
 ensurepip-disabled.diff
-reproducible-buildinfo.diff
 pydoc-use-pager.diff
 local-doc-references.diff
 #build-math-object.diff
@@ -31,3 +31,7 @@ fix-py_compile.diff
 ntpath-import.diff
 python3.12-updates.diff
 issue108447.diff
+makefile-bootstrap.diff
+ignore-wheeldata.diff
+test-freeze-strip-libdir.diff
+issue127330.diff

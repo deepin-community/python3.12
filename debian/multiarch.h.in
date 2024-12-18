@@ -115,7 +115,13 @@
 #   error unknown multiarch location for @header@
 # endif
 #elif defined(__gnu_hurd__)
-# include <i386-gnu/@subdir@/@header@>
+# if defined(__LP64__)
+#  include <x86_64-gnu/@subdir@/@header@>
+# elif defined(__i386__)
+#  include <i386-gnu/@subdir@/@header@>
+# else
+#  error unknown multiarch location for @header@
+# endif
 #else
 # error unknown multiarch location for @header@
 #endif
