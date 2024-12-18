@@ -1,4 +1,3 @@
-lib@PVER@-dbg binary: package-name-doesnt-match-sonames
 lib@PVER@-dbg binary: non-dev-pkg-with-shlib-symlink
 
 # no, it's not unusual

@@ -5,7 +5,7 @@ Forwarded: no
 
 --- a/Makefile.pre.in
 +++ b/Makefile.pre.in
-@@ -659,7 +659,16 @@ profile-run-stamp:
+@@ -661,7 +661,16 @@
  	$(MAKE) profile-gen-stamp
  	# Next, run the profile task to generate the profile information.
  	@ # FIXME: can't run for a cross build

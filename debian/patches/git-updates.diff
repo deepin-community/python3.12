@@ -1,6 +1,1370 @@
-Description: Updates from the 3.12 branch (until 2023-12-02).
+Description: Updates from the 3.12 branch (until 2024-12-13).
  We pick the latest updates from the maintainance branch, and carry them in a
  patch, rather than creating and uploading uploading a new .orig tarball.
 
-# git diff --no-renames 0fb18b02c8ad56299d6a2910be0bab8ad601ef24 acc62db8af4e472a4922c10b91c60c36c49a5f79 | filterdiff -x ?/.hgignore -x ?/.hgeol -x ?/.hgtags -x ?/.hgtouch -x ?/.gitignore -x ?/.gitattributes -x '?/.github/*' -x '?/.git*' -x ?/.codecov.yml -x ?/.travis.yml -x ?/configure --remove-timestamps
+# git diff --no-renames 2dc476bcb9142cd25d7e1d52392b73a3dcdf1756 6544f994637c7d4fc86d8a360e519a4e560606db | filterdiff -x ?/.hgignore -x ?/.hgeol -x ?/.hgtags -x ?/.hgtouch -x ?/.gitignore -x ?/.gitattributes -x '?/.github/*' -x '?/.git*' -x ?/.codecov.yml -x ?/.travis.yml -x ?/configure --remove-timestamps
 
+diff --git a/Doc/c-api/object.rst b/Doc/c-api/object.rst
+index 2109b12bac9..cefd384fd35 100644
+--- a/Doc/c-api/object.rst
++++ b/Doc/c-api/object.rst
+@@ -410,6 +410,12 @@ Object Protocol
+    iterated.
+ 
+ 
++.. c:function:: PyObject* PyObject_SelfIter(PyObject *obj)
++
++   This is equivalent to the Python ``__iter__(self): return self`` method.
++   It is intended for :term:`iterator` types, to be used in the :c:member:`PyTypeObject.tp_iter` slot.
++
++
+ .. c:function:: PyObject* PyObject_GetAIter(PyObject *o)
+ 
+    This is the equivalent to the Python expression ``aiter(o)``. Takes an
+diff --git a/Doc/data/refcounts.dat b/Doc/data/refcounts.dat
+index 28532620ba6..88d283aa51e 100644
+--- a/Doc/data/refcounts.dat
++++ b/Doc/data/refcounts.dat
+@@ -1818,6 +1818,9 @@ PyObject_RichCompareBool:PyObject*:o1:0:
+ PyObject_RichCompareBool:PyObject*:o2:0:
+ PyObject_RichCompareBool:int:opid::
+ 
++PyObject_SelfIter:PyObject*::+1:
++PyObject_SelfIter:PyObject*:obj:0:
++
+ PyObject_SetAttr:int:::
+ PyObject_SetAttr:PyObject*:o:0:
+ PyObject_SetAttr:PyObject*:attr_name:0:
+diff --git a/Doc/howto/enum.rst b/Doc/howto/enum.rst
+index 9b6bb613749..3743e68192f 100644
+--- a/Doc/howto/enum.rst
++++ b/Doc/howto/enum.rst
+@@ -1,3 +1,5 @@
++.. _enum-howto:
++
+ ==========
+ Enum HOWTO
+ ==========
+diff --git a/Doc/howto/functional.rst b/Doc/howto/functional.rst
+index b0f9d22d74f..1f0608fb0fc 100644
+--- a/Doc/howto/functional.rst
++++ b/Doc/howto/functional.rst
+@@ -1,3 +1,5 @@
++.. _functional-howto:
++
+ ********************************
+   Functional Programming HOWTO
+ ********************************
+diff --git a/Doc/howto/gdb_helpers.rst b/Doc/howto/gdb_helpers.rst
+index 53bbf7ddaa2..98ce813ca4a 100644
+--- a/Doc/howto/gdb_helpers.rst
++++ b/Doc/howto/gdb_helpers.rst
+@@ -180,7 +180,7 @@ regular machine-level integer::
+     (gdb) p some_python_integer
+     $4 = 42
+ 
+-The internal structure can be revealed with a cast to :c:expr:`PyLongObject *`:
++The internal structure can be revealed with a cast to :c:expr:`PyLongObject *`::
+ 
+     (gdb) p *(PyLongObject*)some_python_integer
+     $5 = {ob_base = {ob_base = {ob_refcnt = 8, ob_type = 0x3dad39f5e0}, ob_size = 1},
+diff --git a/Doc/howto/index.rst b/Doc/howto/index.rst
+index 9c8458f2bb6..98364aaf027 100644
+--- a/Doc/howto/index.rst
++++ b/Doc/howto/index.rst
+@@ -2,16 +2,14 @@
+  Python HOWTOs
+ ***************
+ 
+-Python HOWTOs are documents that cover a single, specific topic,
+-and attempt to cover it fairly completely. Modelled on the Linux
+-Documentation Project's HOWTO collection, this collection is an
++Python HOWTOs are documents that cover a specific topic in-depth.
++Modeled on the Linux Documentation Project's HOWTO collection, this collection is an
+ effort to foster documentation that's more detailed than the
+ Python Library Reference.
+ 
+-Currently, the HOWTOs are:
+-
+ .. toctree::
+    :maxdepth: 1
++   :hidden:
+ 
+    cporting.rst
+    curses.rst
+@@ -33,3 +31,32 @@ Currently, the HOWTOs are:
+    annotations.rst
+    isolating-extensions.rst
+    mro.rst
++
++General:
++
++* :ref:`annotations-howto`
++* :ref:`argparse-tutorial`
++* :ref:`descriptorhowto`
++* :ref:`enum-howto`
++* :ref:`functional-howto`
++* :ref:`ipaddress-howto`
++* :ref:`logging-howto`
++* :ref:`logging-cookbook`
++* :ref:`regex-howto`
++* :ref:`sortinghowto`
++* :ref:`unicode-howto`
++* :ref:`urllib-howto`
++
++Advanced development:
++
++* :ref:`curses-howto`
++* :ref:`isolating-extensions-howto`
++* :ref:`python_2.3_mro`
++* :ref:`socket-howto`
++* :ref:`cporting-howto`
++
++Debugging and profiling:
++
++* :ref:`gdb`
++* :ref:`instrumentation`
++* :ref:`perf_profiling`
+diff --git a/Doc/howto/logging.rst b/Doc/howto/logging.rst
+index 5a392f94da4..597de77a828 100644
+--- a/Doc/howto/logging.rst
++++ b/Doc/howto/logging.rst
+@@ -1,3 +1,5 @@
++.. _logging-howto:
++
+ =============
+ Logging HOWTO
+ =============
+diff --git a/Doc/library/http.cookies.rst b/Doc/library/http.cookies.rst
+index 4ce2e3c4f4c..ad37a0fca47 100644
+--- a/Doc/library/http.cookies.rst
++++ b/Doc/library/http.cookies.rst
+@@ -98,7 +98,7 @@ Cookie Objects
+ .. method:: BaseCookie.output(attrs=None, header='Set-Cookie:', sep='\r\n')
+ 
+    Return a string representation suitable to be sent as HTTP headers. *attrs* and
+-   *header* are sent to each :class:`Morsel`'s :meth:`output` method. *sep* is used
++   *header* are sent to each :class:`Morsel`'s :meth:`~Morsel.output` method. *sep* is used
+    to join the headers together, and is by default the combination ``'\r\n'``
+    (CRLF).
+ 
+diff --git a/Doc/library/traceback.rst b/Doc/library/traceback.rst
+index 9d57c354523..0a2b9c5cfb1 100644
+--- a/Doc/library/traceback.rst
++++ b/Doc/library/traceback.rst
+@@ -157,6 +157,13 @@ Module-Level Functions
+    arguments have the same meaning as for :func:`print_stack`.
+ 
+ 
++.. function:: print_list(extracted_list, file=None)
++
++   Print the list of tuples as returned by :func:`extract_tb` or
++   :func:`extract_stack` as a formatted stack trace to the given file.
++   If *file* is ``None``, the output is written to :data:`sys.stderr`.
++
++
+ .. function:: format_list(extracted_list)
+ 
+    Given a list of tuples or :class:`FrameSummary` objects as returned by
+@@ -256,7 +263,7 @@ Module-Level Functions
+ :class:`!TracebackException` objects are created from actual exceptions to
+ capture data for later printing.  They offer a more lightweight method of
+ storing this information by avoiding holding references to
+-:ref:`traceback<traceback-objects>` and :ref:`frame<frame-objects>` objects
++:ref:`traceback<traceback-objects>` and :ref:`frame<frame-objects>` objects.
+ In addition, they expose more options to configure the output compared to
+ the module-level functions described above.
+ 
+diff --git a/Doc/library/xmlrpc.client.rst b/Doc/library/xmlrpc.client.rst
+index c57f433e6ef..971e6560584 100644
+--- a/Doc/library/xmlrpc.client.rst
++++ b/Doc/library/xmlrpc.client.rst
+@@ -64,11 +64,11 @@ between conformable Python objects and XML on the wire.
+    The obsolete *use_datetime* flag is similar to *use_builtin_types* but it
+    applies only to date/time values.
+ 
+-.. versionchanged:: 3.3
+-    The *use_builtin_types* flag was added.
++   .. versionchanged:: 3.3
++      The *use_builtin_types* flag was added.
+ 
+-.. versionchanged:: 3.8
+-    The *headers* parameter was added.
++   .. versionchanged:: 3.8
++      The *headers* parameter was added.
+ 
+    Both the HTTP and HTTPS transports support the URL syntax extension for HTTP
+    Basic Authentication: ``http://user:pass@host:port/path``.  The  ``user:pass``
+diff --git a/Doc/library/xmlrpc.rst b/Doc/library/xmlrpc.rst
+index 5f0a2cf68d0..a93d08f78cf 100644
+--- a/Doc/library/xmlrpc.rst
++++ b/Doc/library/xmlrpc.rst
+@@ -1,6 +1,9 @@
+ :mod:`!xmlrpc` --- XMLRPC server and client modules
+ ===================================================
+ 
++.. module:: xmlrpc
++   :synopsis: Server and client modules implementing XML-RPC.
++
+ XML-RPC is a Remote Procedure Call method that uses XML passed via HTTP as a
+ transport.  With it, a client can call methods with parameters on a remote
+ server (the server is named by a URI) and get back structured data.
+diff --git a/Doc/tools/.nitignore b/Doc/tools/.nitignore
+index c665ddd1bb9..e69e6100945 100644
+--- a/Doc/tools/.nitignore
++++ b/Doc/tools/.nitignore
+@@ -94,7 +94,6 @@ Doc/whatsnew/2.4.rst
+ Doc/whatsnew/2.5.rst
+ Doc/whatsnew/2.6.rst
+ Doc/whatsnew/2.7.rst
+-Doc/whatsnew/3.0.rst
+ Doc/whatsnew/3.3.rst
+ Doc/whatsnew/3.4.rst
+ Doc/whatsnew/3.5.rst
+diff --git a/Doc/tutorial/datastructures.rst b/Doc/tutorial/datastructures.rst
+index 263b0c2e281..cbe780e075b 100644
+--- a/Doc/tutorial/datastructures.rst
++++ b/Doc/tutorial/datastructures.rst
+@@ -142,8 +142,8 @@ Using Lists as Stacks
+ 
+ The list methods make it very easy to use a list as a stack, where the last
+ element added is the first element retrieved ("last-in, first-out").  To add an
+-item to the top of the stack, use :meth:`!~list.append`.  To retrieve an item from the
+-top of the stack, use :meth:`!~list.pop` without an explicit index.  For example::
++item to the top of the stack, use :meth:`!append`.  To retrieve an item from the
++top of the stack, use :meth:`!pop` without an explicit index.  For example::
+ 
+    >>> stack = [3, 4, 5]
+    >>> stack.append(6)
+@@ -340,7 +340,7 @@ The :keyword:`!del` statement
+ =============================
+ 
+ There is a way to remove an item from a list given its index instead of its
+-value: the :keyword:`del` statement.  This differs from the :meth:`!~list.pop` method
++value: the :keyword:`del` statement.  This differs from the :meth:`!pop` method
+ which returns a value.  The :keyword:`!del` statement can also be used to remove
+ slices from a list or clear the entire list (which we did earlier by assignment
+ of an empty list to the slice).  For example::
+@@ -500,8 +500,8 @@ any immutable type; strings and numbers can always be keys.  Tuples can be used
+ as keys if they contain only strings, numbers, or tuples; if a tuple contains
+ any mutable object either directly or indirectly, it cannot be used as a key.
+ You can't use lists as keys, since lists can be modified in place using index
+-assignments, slice assignments, or methods like :meth:`!~list.append` and
+-:meth:`!~list.extend`.
++assignments, slice assignments, or methods like :meth:`!append` and
++:meth:`!extend`.
+ 
+ It is best to think of a dictionary as a set of *key: value* pairs,
+ with the requirement that the keys are unique (within one dictionary). A pair of
+diff --git a/Doc/whatsnew/3.0.rst b/Doc/whatsnew/3.0.rst
+index 766db5ecc67..7cd2ffd39c9 100644
+--- a/Doc/whatsnew/3.0.rst
++++ b/Doc/whatsnew/3.0.rst
+@@ -150,8 +150,8 @@ Some well-known APIs no longer return lists:
+   sorted(d)`` instead (this works in Python 2.5 too and is just
+   as efficient).
+ 
+-* Also, the :meth:`dict.iterkeys`, :meth:`dict.iteritems` and
+-  :meth:`dict.itervalues` methods are no longer supported.
++* Also, the :meth:`!dict.iterkeys`, :meth:`!dict.iteritems` and
++  :meth:`!dict.itervalues` methods are no longer supported.
+ 
+ * :func:`map` and :func:`filter` return iterators.  If you really need
+   a list and the input sequences are all of equal length, a quick
+@@ -170,7 +170,7 @@ Some well-known APIs no longer return lists:
+   :func:`itertools.zip_longest`, e.g. ``map(func, *sequences)`` becomes
+   ``list(map(func, itertools.zip_longest(*sequences)))``.
+ 
+-* :func:`range` now behaves like :func:`xrange` used to behave, except
++* :func:`range` now behaves like :func:`!xrange` used to behave, except
+   it works with values of arbitrary size.  The latter no longer
+   exists.
+ 
+@@ -192,33 +192,33 @@ Python 3.0 has simplified the rules for ordering comparisons:
+   operators: objects of different incomparable types always compare
+   unequal to each other.
+ 
+-* :meth:`builtin.sorted` and :meth:`list.sort` no longer accept the
++* :meth:`sorted` and :meth:`list.sort` no longer accept the
+   *cmp* argument providing a comparison function.  Use the *key*
+   argument instead. N.B. the *key* and *reverse* arguments are now
+   "keyword-only".
+ 
+-* The :func:`cmp` function should be treated as gone, and the :meth:`__cmp__`
+-  special method is no longer supported.  Use :meth:`__lt__` for sorting,
+-  :meth:`__eq__` with :meth:`__hash__`, and other rich comparisons as needed.
+-  (If you really need the :func:`cmp` functionality, you could use the
++* The :func:`!cmp` function should be treated as gone, and the :meth:`!__cmp__`
++  special method is no longer supported.  Use :meth:`~object.__lt__` for sorting,
++  :meth:`~object.__eq__` with :meth:`~object.__hash__`, and other rich comparisons as needed.
++  (If you really need the :func:`!cmp` functionality, you could use the
+   expression ``(a > b) - (a < b)`` as the equivalent for ``cmp(a, b)``.)
+ 
+ Integers
+ --------
+ 
+-* :pep:`237`: Essentially, :class:`long` renamed to :class:`int`.
++* :pep:`237`: Essentially, :class:`!long` renamed to :class:`int`.
+   That is, there is only one built-in integral type, named
+-  :class:`int`; but it behaves mostly like the old :class:`long` type.
++  :class:`int`; but it behaves mostly like the old :class:`!long` type.
+ 
+ * :pep:`238`: An expression like ``1/2`` returns a float.  Use
+   ``1//2`` to get the truncating behavior.  (The latter syntax has
+   existed for years, at least since Python 2.2.)
+ 
+-* The :data:`sys.maxint` constant was removed, since there is no
++* The :data:`!sys.maxint` constant was removed, since there is no
+   longer a limit to the value of integers.  However, :data:`sys.maxsize`
+   can be used as an integer larger than any practical list or string
+   index.  It conforms to the implementation's "natural" integer size
+-  and is typically the same as :data:`sys.maxint` in previous releases
++  and is typically the same as :data:`!sys.maxint` in previous releases
+   on the same platform (assuming the same build options).
+ 
+ * The :func:`repr` of a long integer doesn't include the trailing ``L``
+@@ -251,7 +251,7 @@ changed.
+   that uses Unicode, encodings or binary data most likely has to
+   change.  The change is for the better, as in the 2.x world there
+   were numerous bugs having to do with mixing encoded and unencoded
+-  text.  To be prepared in Python 2.x, start using :class:`unicode`
++  text.  To be prepared in Python 2.x, start using :class:`!unicode`
+   for all unencoded text, and :class:`str` for binary or encoded data
+   only.  Then the ``2to3`` tool will do most of the work for you.
+ 
+@@ -269,7 +269,7 @@ changed.
+   separate *mutable* type to hold buffered binary data,
+   :class:`bytearray`.  Nearly all APIs that accept :class:`bytes` also
+   accept :class:`bytearray`.  The mutable API is based on
+-  :class:`collections.MutableSequence`.
++  :class:`collections.MutableSequence <collections.abc.MutableSequence>`.
+ 
+ * All backslashes in raw string literals are interpreted literally.
+   This means that ``'\U'`` and ``'\u'`` escapes in raw strings are not
+@@ -278,11 +278,11 @@ changed.
+   single "euro" character.  (Of course, this change only affects raw
+   string literals; the euro character is ``'\u20ac'`` in Python 3.0.)
+ 
+-* The built-in :class:`basestring` abstract type was removed.  Use
++* The built-in :class:`!basestring` abstract type was removed.  Use
+   :class:`str` instead.  The :class:`str` and :class:`bytes` types
+   don't have functionality enough in common to warrant a shared base
+   class.  The ``2to3`` tool (see below) replaces every occurrence of
+-  :class:`basestring` with :class:`str`.
++  :class:`!basestring` with :class:`str`.
+ 
+ * Files opened as text files (still the default mode for :func:`open`)
+   always use an encoding to map between strings (in memory) and bytes
+@@ -357,7 +357,7 @@ New Syntax
+   provides a standardized way of annotating a function's parameters
+   and return value.  There are no semantics attached to such
+   annotations except that they can be introspected at runtime using
+-  the :attr:`~object.__annotations__` attribute.  The intent is to
++  the :attr:`!__annotations__` attribute.  The intent is to
+   encourage experimentation through metaclasses, decorators or frameworks.
+ 
+ * :pep:`3102`: Keyword-only arguments.  Named parameters occurring
+@@ -428,7 +428,7 @@ Changed Syntax
+     class C(metaclass=M):
+         ...
+ 
+-  The module-global :data:`__metaclass__` variable is no longer
++  The module-global :data:`!__metaclass__` variable is no longer
+   supported.  (It was a crutch to make it easier to default to
+   new-style classes without deriving every class from
+   :class:`object`.)
+@@ -522,19 +522,19 @@ consulted for longer descriptions.
+   *encoding*, *errors*, *newline* and *closefd*.  Also note that an
+   invalid *mode* argument now raises :exc:`ValueError`, not
+   :exc:`IOError`.  The binary file object underlying a text file
+-  object can be accessed as :attr:`f.buffer` (but beware that the
++  object can be accessed as :attr:`!f.buffer` (but beware that the
+   text object maintains a buffer of itself in order to speed up
+   the encoding and decoding operations).
+ 
+-* :ref:`pep-3118`.  The old builtin :func:`buffer` is now really gone;
++* :ref:`pep-3118`.  The old builtin :func:`!buffer` is now really gone;
+   the new builtin :func:`memoryview` provides (mostly) similar
+   functionality.
+ 
+ * :ref:`pep-3119`.  The :mod:`abc` module and the ABCs defined in the
+   :mod:`collections` module plays a somewhat more prominent role in
+   the language now, and built-in collection types like :class:`dict`
+-  and :class:`list` conform to the :class:`collections.MutableMapping`
+-  and :class:`collections.MutableSequence` ABCs, respectively.
++  and :class:`list` conform to the :class:`collections.MutableMapping <collections.abc.MutableMapping>`
++  and :class:`collections.MutableSequence <collections.abc.MutableSequence>` ABCs, respectively.
+ 
+ * :ref:`pep-3127`.  As mentioned above, the new octal literal
+   notation is the only one supported, and binary literals have been
+@@ -612,7 +612,7 @@ review:
+     :mod:`!CGIHTTPServer`, :mod:`!SimpleHTTPServer`, :mod:`!Cookie`,
+     :mod:`!cookielib`).
+ 
+-  * :mod:`tkinter` (all :mod:`Tkinter`-related modules except
++  * :mod:`tkinter` (all ``Tkinter``-related modules except
+     :mod:`turtle`).  The target audience of :mod:`turtle` doesn't
+     really care about :mod:`tkinter`.  Also note that as of Python
+     2.6, the functionality of :mod:`turtle` has been greatly enhanced.
+@@ -628,47 +628,47 @@ Some other changes to standard library modules, not covered by
+ 
+ * Killed :mod:`!sets`.  Use the built-in :func:`set` class.
+ 
+-* Cleanup of the :mod:`sys` module: removed :func:`sys.exitfunc`,
+-  :func:`sys.exc_clear`, :data:`sys.exc_type`, :data:`sys.exc_value`,
+-  :data:`sys.exc_traceback`.  (Note that :data:`sys.last_type`
++* Cleanup of the :mod:`sys` module: removed :func:`!sys.exitfunc`,
++  :func:`!sys.exc_clear`, :data:`!sys.exc_type`, :data:`!sys.exc_value`,
++  :data:`!sys.exc_traceback`.  (Note that :data:`sys.last_type`
+   etc. remain.)
+ 
+-* Cleanup of the :class:`array.array` type: the :meth:`read` and
+-  :meth:`write` methods are gone; use :meth:`fromfile` and
+-  :meth:`tofile` instead.  Also, the ``'c'`` typecode for array is
++* Cleanup of the :class:`array.array` type: the :meth:`!read` and
++  :meth:`!write` methods are gone; use :meth:`~array.array.fromfile` and
++  :meth:`~array.array.tofile` instead.  Also, the ``'c'`` typecode for array is
+   gone -- use either ``'b'`` for bytes or ``'u'`` for Unicode
+   characters.
+ 
+ * Cleanup of the :mod:`operator` module: removed
+-  :func:`sequenceIncludes` and :func:`isCallable`.
++  :func:`!sequenceIncludes` and :func:`!isCallable`.
+ 
+ * Cleanup of the :mod:`!thread` module: :func:`!acquire_lock` and
+   :func:`!release_lock` are gone; use :meth:`~threading.Lock.acquire` and
+   :meth:`~threading.Lock.release` instead.
+ 
+-* Cleanup of the :mod:`random` module: removed the :func:`jumpahead` API.
++* Cleanup of the :mod:`random` module: removed the :func:`!jumpahead` API.
+ 
+ * The :mod:`!new` module is gone.
+ 
+-* The functions :func:`os.tmpnam`, :func:`os.tempnam` and
+-  :func:`os.tmpfile` have been removed in favor of the :mod:`tempfile`
++* The functions :func:`!os.tmpnam`, :func:`!os.tempnam` and
++  :func:`!os.tmpfile` have been removed in favor of the :mod:`tempfile`
+   module.
+ 
+ * The :mod:`tokenize` module has been changed to work with bytes.  The
+   main entry point is now :func:`tokenize.tokenize`, instead of
+   generate_tokens.
+ 
+-* :data:`string.letters` and its friends (:data:`string.lowercase` and
+-  :data:`string.uppercase`) are gone.  Use
++* :data:`!string.letters` and its friends (:data:`!string.lowercase` and
++  :data:`!string.uppercase`) are gone.  Use
+   :data:`string.ascii_letters` etc. instead.  (The reason for the
+-  removal is that :data:`string.letters` and friends had
++  removal is that :data:`!string.letters` and friends had
+   locale-specific behavior, which is a bad idea for such
+   attractively named global "constants".)
+ 
+-* Renamed module :mod:`__builtin__` to :mod:`builtins` (removing the
+-  underscores, adding an 's').  The :data:`__builtins__` variable
++* Renamed module :mod:`!__builtin__` to :mod:`builtins` (removing the
++  underscores, adding an 's').  The :data:`!__builtins__` variable
+   found in most global namespaces is unchanged.  To modify a builtin,
+-  you should use :mod:`builtins`, not :data:`__builtins__`!
++  you should use :mod:`builtins`, not :data:`!__builtins__`!
+ 
+ 
+ :pep:`3101`: A New Approach To String Formatting
+@@ -702,9 +702,9 @@ new powerful features added:
+   idiom for handling all exceptions except for this latter category is
+   to use :keyword:`except` :exc:`Exception`.
+ 
+-* :exc:`StandardError` was removed.
++* :exc:`!StandardError` was removed.
+ 
+-* Exceptions no longer behave as sequences.  Use the :attr:`args`
++* Exceptions no longer behave as sequences.  Use the :attr:`~BaseException.args`
+   attribute instead.
+ 
+ * :pep:`3109`: Raising exceptions.  You must now use :samp:`raise
+@@ -765,20 +765,20 @@ Operators And Special Methods
+   When referencing a method as a class attribute, you now get a plain
+   function object.
+ 
+-* :meth:`__getslice__`, :meth:`__setslice__` and :meth:`__delslice__`
++* :meth:`!__getslice__`, :meth:`!__setslice__` and :meth:`!__delslice__`
+   were killed.  The syntax ``a[i:j]`` now translates to
+-  ``a.__getitem__(slice(i, j))`` (or :meth:`__setitem__` or
+-  :meth:`__delitem__`, when used as an assignment or deletion target,
++  ``a.__getitem__(slice(i, j))`` (or :meth:`~object.__setitem__` or
++  :meth:`~object.__delitem__`, when used as an assignment or deletion target,
+   respectively).
+ 
+ * :pep:`3114`: the standard :meth:`next` method has been renamed to
+   :meth:`~iterator.__next__`.
+ 
+-* The :meth:`__oct__` and :meth:`__hex__` special methods are removed
+-  -- :func:`oct` and :func:`hex` use :meth:`__index__` now to convert
++* The :meth:`!__oct__` and :meth:`!__hex__` special methods are removed
++  -- :func:`oct` and :func:`hex` use :meth:`~object.__index__` now to convert
+   the argument to an integer.
+ 
+-* Removed support for :attr:`__members__` and :attr:`__methods__`.
++* Removed support for :attr:`!__members__` and :attr:`!__methods__`.
+ 
+ * The function attributes named :attr:`!func_X` have been renamed to
+   use the :attr:`!__X__` form, freeing up these names in the function
+@@ -802,7 +802,7 @@ Builtins
+   instance will automatically be chosen.  With arguments, the behavior
+   of :func:`super` is unchanged.
+ 
+-* :pep:`3111`: :func:`raw_input` was renamed to :func:`input`.  That
++* :pep:`3111`: :func:`!raw_input` was renamed to :func:`input`.  That
+   is, the new :func:`input` function reads a line from
+   :data:`sys.stdin` and returns it with the trailing newline stripped.
+   It raises :exc:`EOFError` if the input is terminated prematurely.
+@@ -820,31 +820,31 @@ Builtins
+   argument and a value of the same type as ``x`` when called with two
+   arguments.
+ 
+-* Moved :func:`intern` to :func:`sys.intern`.
++* Moved :func:`!intern` to :func:`sys.intern`.
+ 
+-* Removed: :func:`apply`.  Instead of ``apply(f, args)`` use
++* Removed: :func:`!apply`.  Instead of ``apply(f, args)`` use
+   ``f(*args)``.
+ 
+ * Removed :func:`callable`.  Instead of ``callable(f)`` you can use
+-  ``isinstance(f, collections.Callable)``.  The :func:`operator.isCallable`
++  ``isinstance(f, collections.Callable)``.  The :func:`!operator.isCallable`
+   function is also gone.
+ 
+-* Removed :func:`coerce`.  This function no longer serves a purpose
++* Removed :func:`!coerce`.  This function no longer serves a purpose
+   now that classic classes are gone.
+ 
+-* Removed :func:`execfile`.  Instead of ``execfile(fn)`` use
++* Removed :func:`!execfile`.  Instead of ``execfile(fn)`` use
+   ``exec(open(fn).read())``.
+ 
+-* Removed the :class:`file` type.  Use :func:`open`.  There are now several
++* Removed the :class:`!file` type.  Use :func:`open`.  There are now several
+   different kinds of streams that open can return in the :mod:`io` module.
+ 
+-* Removed :func:`reduce`.  Use :func:`functools.reduce` if you really
++* Removed :func:`!reduce`.  Use :func:`functools.reduce` if you really
+   need it; however, 99 percent of the time an explicit :keyword:`for`
+   loop is more readable.
+ 
+-* Removed :func:`reload`.  Use :func:`!imp.reload`.
++* Removed :func:`!reload`.  Use :func:`!imp.reload`.
+ 
+-* Removed. :meth:`dict.has_key` -- use the :keyword:`in` operator
++* Removed. :meth:`!dict.has_key` -- use the :keyword:`in` operator
+   instead.
+ 
+ .. ======================================================================
+diff --git a/Include/cpython/pytime.h b/Include/cpython/pytime.h
+index 16d88d191e9..46cc97bd7cf 100644
+--- a/Include/cpython/pytime.h
++++ b/Include/cpython/pytime.h
+@@ -53,7 +53,7 @@ functions and constants
+ extern "C" {
+ #endif
+ 
+-#ifdef __clang__
++#if defined(__clang__) || defined(_MSC_VER)
+ struct timeval;
+ #endif
+ 
+diff --git a/Include/patchlevel.h b/Include/patchlevel.h
+index 6c597837da0..2fa45090034 100644
+--- a/Include/patchlevel.h
++++ b/Include/patchlevel.h
+@@ -23,7 +23,7 @@
+ #define PY_RELEASE_SERIAL       0
+ 
+ /* Version as a string */
+-#define PY_VERSION              "3.12.8"
++#define PY_VERSION              "3.12.8+"
+ /*--end constants--*/
+ 
+ /* Version as a single 4-byte hex number, e.g. 0x010502B2 == 1.5.2b2.
+diff --git a/Include/pymacro.h b/Include/pymacro.h
+index d5700dc3893..94e6248d283 100644
+--- a/Include/pymacro.h
++++ b/Include/pymacro.h
+@@ -118,6 +118,15 @@
+  */
+ #if defined(__GNUC__) || defined(__clang__)
+ #  define Py_UNUSED(name) _unused_ ## name __attribute__((unused))
++#elif defined(_MSC_VER)
++   // Disable warning C4100: unreferenced formal parameter,
++   // declare the parameter,
++   // restore old compiler warnings.
++#  define Py_UNUSED(name) \
++        __pragma(warning(push)) \
++        __pragma(warning(suppress: 4100)) \
++        _unused_ ## name \
++        __pragma(warning(pop))
+ #else
+ #  define Py_UNUSED(name) _unused_ ## name
+ #endif
+diff --git a/Include/tracemalloc.h b/Include/tracemalloc.h
+index 580027a8e36..4db34b9509e 100644
+--- a/Include/tracemalloc.h
++++ b/Include/tracemalloc.h
+@@ -1,7 +1,10 @@
+ #ifndef Py_TRACEMALLOC_H
+ #define Py_TRACEMALLOC_H
+-
+ #ifndef Py_LIMITED_API
++#ifdef __cplusplus
++extern "C" {
++#endif
++
+ /* Track an allocated memory block in the tracemalloc module.
+    Return 0 on success, return -1 on error (failed to allocate memory to store
+    the trace).
+@@ -67,6 +70,8 @@ PyAPI_FUNC(PyObject *) _PyTraceMalloc_GetTracedMemory(void);
+ /* Set the peak size of traced memory blocks to the current size */
+ PyAPI_FUNC(void) _PyTraceMalloc_ResetPeak(void);
+ 
++#ifdef __cplusplus
++}
+ #endif
+-
++#endif /* !Py_LIMITED_API */
+ #endif /* !Py_TRACEMALLOC_H */
+diff --git a/Lib/_pydecimal.py b/Lib/_pydecimal.py
+index 75df3db2624..ff80180a79e 100644
+--- a/Lib/_pydecimal.py
++++ b/Lib/_pydecimal.py
+@@ -97,7 +97,7 @@ class DecimalException(ArithmeticError):
+ 
+     Used exceptions derive from this.
+     If an exception derives from another exception besides this (such as
+-    Underflow (Inexact, Rounded, Subnormal) that indicates that it is only
++    Underflow (Inexact, Rounded, Subnormal)) that indicates that it is only
+     called if the others are present.  This isn't actually used for
+     anything, though.
+ 
+@@ -145,7 +145,7 @@ class InvalidOperation(DecimalException):
+     x ** (+-)INF
+     An operand is invalid
+ 
+-    The result of the operation after these is a quiet positive NaN,
++    The result of the operation after this is a quiet positive NaN,
+     except when the cause is a signaling NaN, in which case the result is
+     also a quiet NaN, but with the original sign, and an optional
+     diagnostic information.
+diff --git a/Lib/_strptime.py b/Lib/_strptime.py
+index dfd2bc5d8b4..5d9df2b12f8 100644
+--- a/Lib/_strptime.py
++++ b/Lib/_strptime.py
+@@ -300,8 +300,6 @@ def __init__(self, locale_time=None):
+             'V': r"(?P<V>5[0-3]|0[1-9]|[1-4]\d|\d)",
+             # W is set below by using 'U'
+             'y': r"(?P<y>\d\d)",
+-            #XXX: Does 'Y' need to worry about having less or more than
+-            #     4 digits?
+             'Y': r"(?P<Y>\d\d\d\d)",
+             'z': r"(?P<z>[+-]\d\d:?[0-5]\d(:?[0-5]\d(\.\d{1,6})?)?|(?-i:Z))",
+             'A': self.__seqToRE(self.locale_time.f_weekday, 'A'),
+diff --git a/Lib/asyncio/selector_events.py b/Lib/asyncio/selector_events.py
+index 790711f8340..dd79ad18df3 100644
+--- a/Lib/asyncio/selector_events.py
++++ b/Lib/asyncio/selector_events.py
+@@ -1183,6 +1183,7 @@ def writelines(self, list_of_data):
+         # If the entire buffer couldn't be written, register a write handler
+         if self._buffer:
+             self._loop._add_writer(self._sock_fd, self._write_ready)
++            self._maybe_pause_protocol()
+ 
+     def can_write_eof(self):
+         return True
+diff --git a/Lib/http/cookies.py b/Lib/http/cookies.py
+index 6b9ed24ad8e..57791c6ab08 100644
+--- a/Lib/http/cookies.py
++++ b/Lib/http/cookies.py
+@@ -424,9 +424,11 @@ def OutputString(self, attrs=None):
+     (                              # Optional group: there may not be a value.
+     \s*=\s*                          # Equal Sign
+     (?P<val>                         # Start of group 'val'
+-    "(?:[^\\"]|\\.)*"                  # Any doublequoted string
++    "(?:[^\\"]|\\.)*"                  # Any double-quoted string
+     |                                  # or
+-    \w{3},\s[\w\d\s-]{9,11}\s[\d:]{8}\sGMT  # Special case for "expires" attr
++    # Special case for "expires" attr
++    (\w{3,6}day|\w{3}),\s              # Day of the week or abbreviated day
++    [\w\d\s-]{9,11}\s[\d:]{8}\sGMT     # Date and time in specific format
+     |                                  # or
+     [""" + _LegalValueChars + r"""]*      # Any word or empty string
+     )                                # End of group 'val'
+diff --git a/Lib/linecache.py b/Lib/linecache.py
+index 248cba93874..b6453fe2f31 100644
+--- a/Lib/linecache.py
++++ b/Lib/linecache.py
+@@ -54,14 +54,17 @@ def checkcache(filename=None):
+     (This is not checked upon each call!)"""
+ 
+     if filename is None:
+-        filenames = list(cache.keys())
+-    elif filename in cache:
+-        filenames = [filename]
++        # get keys atomically
++        filenames = cache.copy().keys()
+     else:
+-        return
++        filenames = [filename]
+ 
+     for filename in filenames:
+-        entry = cache[filename]
++        try:
++            entry = cache[filename]
++        except KeyError:
++            continue
++
+         if len(entry) == 1:
+             # lazy cache entry, leave it lazy.
+             continue
+diff --git a/Lib/platform.py b/Lib/platform.py
+index c5b60480369..b86e6834911 100755
+--- a/Lib/platform.py
++++ b/Lib/platform.py
+@@ -348,7 +348,8 @@ def _wmi_query(table, *keys):
+ ]
+ 
+ _WIN32_SERVER_RELEASES = [
+-    ((10, 1, 0), "post2022Server"),
++    ((10, 1, 0), "post2025Server"),
++    ((10, 0, 26100), "2025Server"),
+     ((10, 0, 20348), "2022Server"),
+     ((10, 0, 17763), "2019Server"),
+     ((6, 4, 0), "2016Server"),
+diff --git a/Lib/poplib.py b/Lib/poplib.py
+index 9a5ef03c983..81b01385987 100644
+--- a/Lib/poplib.py
++++ b/Lib/poplib.py
+@@ -309,7 +309,7 @@ def close(self):
+     # optional commands:
+ 
+     def rpop(self, user):
+-        """Not sure what this does."""
++        """Send RPOP command to access the mailbox with an alternate user."""
+         return self._shortcmd('RPOP %s' % user)
+ 
+ 
+diff --git a/Lib/test/test__locale.py b/Lib/test/test__locale.py
+index 89c20325055..606dd297452 100644
+--- a/Lib/test/test__locale.py
++++ b/Lib/test/test__locale.py
+@@ -102,6 +102,11 @@ def accept(loc):
+     # ps_AF doesn't work on Windows: see bpo-38324 (msg361830)
+     del known_numerics['ps_AF']
+ 
++if sys.platform == 'sunos5':
++    # On Solaris, Japanese ERAs start with the year 1927,
++    # and thus there's less of them.
++    known_era['ja_JP'] = (5, '+:1:2019/05/01:2019/12/31:令和:%EC元年')
++
+ class _LocaleTests(unittest.TestCase):
+ 
+     def setUp(self):
+diff --git a/Lib/test/test_asyncio/test_selector_events.py b/Lib/test/test_asyncio/test_selector_events.py
+index 47693ea4d3c..736c19796ef 100644
+--- a/Lib/test/test_asyncio/test_selector_events.py
++++ b/Lib/test/test_asyncio/test_selector_events.py
+@@ -805,6 +805,18 @@ def test_writelines_send_partial(self):
+         self.assertTrue(self.sock.send.called)
+         self.assertTrue(self.loop.writers)
+ 
++    def test_writelines_pauses_protocol(self):
++        data = memoryview(b'data')
++        self.sock.send.return_value = 2
++        self.sock.send.fileno.return_value = 7
++
++        transport = self.socket_transport()
++        transport._high_water = 1
++        transport.writelines([data])
++        self.assertTrue(self.protocol.pause_writing.called)
++        self.assertTrue(self.sock.send.called)
++        self.assertTrue(self.loop.writers)
++
+     @unittest.skipUnless(selector_events._HAS_SENDMSG, 'no sendmsg')
+     def test_write_sendmsg_full(self):
+         data = memoryview(b'data')
+diff --git a/Lib/test/test_cppext/__init__.py b/Lib/test/test_cppext/__init__.py
+index f02a823bd22..efd79448c66 100644
+--- a/Lib/test/test_cppext/__init__.py
++++ b/Lib/test/test_cppext/__init__.py
+@@ -1,45 +1,52 @@
+ # gh-91321: Build a basic C++ test extension to check that the Python C API is
+ # compatible with C++ and does not emit C++ compiler warnings.
+ import os.path
++import shlex
+ import shutil
+-import sys
+-import unittest
+ import subprocess
+-import sysconfig
++import unittest
+ from test import support
+-from test.support import os_helper
+ 
+ 
+ SOURCE = os.path.join(os.path.dirname(__file__), 'extension.cpp')
+ SETUP = os.path.join(os.path.dirname(__file__), 'setup.py')
+ 
+ 
++# With MSVC on a debug build, the linker fails with: cannot open file
++# 'python311.lib', it should look 'python311_d.lib'.
++@unittest.skipIf(support.MS_WINDOWS and support.Py_DEBUG,
++                 'test fails on Windows debug build')
++# Building and running an extension in clang sanitizing mode is not
++# straightforward
++@support.skip_if_sanitizer('test does not work with analyzing builds',
++                           address=True, memory=True, ub=True, thread=True)
++# the test uses venv+pip: skip if it's not available
++@support.requires_venv_with_pip()
+ @support.requires_subprocess()
++@support.requires_resource('cpu')
+ class TestCPPExt(unittest.TestCase):
+-    @support.requires_resource('cpu')
+-    def test_build_cpp11(self):
+-        self.check_build(False, '_testcpp11ext')
++    def test_build(self):
++        self.check_build('_testcppext')
+ 
+-    @support.requires_resource('cpu')
+     def test_build_cpp03(self):
+-        self.check_build(True, '_testcpp03ext')
++        self.check_build('_testcpp03ext', std='c++03')
++
++    @unittest.skipIf(support.MS_WINDOWS, "MSVC doesn't support /std:c++11")
++    def test_build_cpp11(self):
++        self.check_build('_testcpp11ext', std='c++11')
++
++    # Only test C++14 on MSVC.
++    # On s390x RHEL7, GCC 4.8.5 doesn't support C++14.
++    @unittest.skipIf(not support.MS_WINDOWS, "need Windows")
++    def test_build_cpp14(self):
++        self.check_build('_testcpp14ext', std='c++14')
+ 
+-    # With MSVC, the linker fails with: cannot open file 'python311.lib'
+-    # https://github.com/python/cpython/pull/32175#issuecomment-1111175897
+-    @unittest.skipIf(support.MS_WINDOWS, 'test fails on Windows')
+-    # Building and running an extension in clang sanitizing mode is not
+-    # straightforward
+-    @unittest.skipIf(
+-        '-fsanitize' in (sysconfig.get_config_var('PY_CFLAGS') or ''),
+-        'test does not work with analyzing builds')
+-    # the test uses venv+pip: skip if it's not available
+-    @support.requires_venv_with_pip()
+-    def check_build(self, std_cpp03, extension_name):
++    def check_build(self, extension_name, std=None):
+         venv_dir = 'env'
+         with support.setup_venv_with_pip_setuptools_wheel(venv_dir) as python_exe:
+-            self._check_build(std_cpp03, extension_name, python_exe)
++            self._check_build(extension_name, python_exe, std=std)
+ 
+-    def _check_build(self, std_cpp03, extension_name, python_exe):
++    def _check_build(self, extension_name, python_exe, std):
+         pkg_dir = 'pkg'
+         os.mkdir(pkg_dir)
+         shutil.copy(SETUP, os.path.join(pkg_dir, os.path.basename(SETUP)))
+@@ -47,10 +54,11 @@ def _check_build(self, std_cpp03, extension_name, python_exe):
+ 
+         def run_cmd(operation, cmd):
+             env = os.environ.copy()
+-            env['CPYTHON_TEST_CPP_STD'] = 'c++03' if std_cpp03 else 'c++11'
++            if std:
++                env['CPYTHON_TEST_CPP_STD'] = std
+             env['CPYTHON_TEST_EXT_NAME'] = extension_name
+             if support.verbose:
+-                print('Run:', ' '.join(cmd))
++                print('Run:', ' '.join(map(shlex.quote, cmd)))
+                 subprocess.run(cmd, check=True, env=env)
+             else:
+                 proc = subprocess.run(cmd,
+@@ -59,6 +67,7 @@ def run_cmd(operation, cmd):
+                                       stderr=subprocess.STDOUT,
+                                       text=True)
+                 if proc.returncode:
++                    print('Run:', ' '.join(map(shlex.quote, cmd)))
+                     print(proc.stdout, end='')
+                     self.fail(
+                         f"{operation} failed with exit code {proc.returncode}")
+@@ -67,6 +76,8 @@ def run_cmd(operation, cmd):
+         cmd = [python_exe, '-X', 'dev',
+                '-m', 'pip', 'install', '--no-build-isolation',
+                os.path.abspath(pkg_dir)]
++        if support.verbose:
++            cmd.append('-v')
+         run_cmd('Install', cmd)
+ 
+         # Do a reference run. Until we test that running python
+diff --git a/Lib/test/test_cppext/extension.cpp b/Lib/test/test_cppext/extension.cpp
+index 90669b10cb2..ab485b629b7 100644
+--- a/Lib/test/test_cppext/extension.cpp
++++ b/Lib/test/test_cppext/extension.cpp
+@@ -8,10 +8,8 @@
+ 
+ #include "Python.h"
+ 
+-#if __cplusplus >= 201103
+-#  define NAME _testcpp11ext
+-#else
+-#  define NAME _testcpp03ext
++#ifndef MODULE_NAME
++#  error "MODULE_NAME macro must be defined"
+ #endif
+ 
+ #define _STR(NAME) #NAME
+@@ -160,7 +158,7 @@ PyType_Slot VirtualPyObject_Slots[] = {
+ };
+ 
+ PyType_Spec VirtualPyObject_Spec = {
+-    /* .name */ STR(NAME) ".VirtualPyObject",
++    /* .name */ STR(MODULE_NAME) ".VirtualPyObject",
+     /* .basicsize */ sizeof(VirtualPyObject),
+     /* .itemsize */ 0,
+     /* .flags */ Py_TPFLAGS_DEFAULT,
+@@ -227,6 +225,10 @@ _testcppext_exec(PyObject *module)
+     if (!result) return -1;
+     Py_DECREF(result);
+ 
++    // test Py_BUILD_ASSERT() and Py_BUILD_ASSERT_EXPR()
++    Py_BUILD_ASSERT(sizeof(int) == sizeof(unsigned int));
++    assert(Py_BUILD_ASSERT_EXPR(sizeof(int) == sizeof(unsigned int)) == 0);
++
+     return 0;
+ }
+ 
+@@ -240,7 +242,7 @@ PyDoc_STRVAR(_testcppext_doc, "C++ test extension.");
+ 
+ static struct PyModuleDef _testcppext_module = {
+     PyModuleDef_HEAD_INIT,  // m_base
+-    STR(NAME),  // m_name
++    STR(MODULE_NAME),  // m_name
+     _testcppext_doc,  // m_doc
+     0,  // m_size
+     _testcppext_methods,  // m_methods
+@@ -254,7 +256,7 @@ static struct PyModuleDef _testcppext_module = {
+ #define FUNC_NAME(NAME) _FUNC_NAME(NAME)
+ 
+ PyMODINIT_FUNC
+-FUNC_NAME(NAME)(void)
++FUNC_NAME(MODULE_NAME)(void)
+ {
+     return PyModuleDef_Init(&_testcppext_module);
+ }
+diff --git a/Lib/test/test_cppext/setup.py b/Lib/test/test_cppext/setup.py
+index c7ba1efb4dd..d97b238b8d1 100644
+--- a/Lib/test/test_cppext/setup.py
++++ b/Lib/test/test_cppext/setup.py
+@@ -1,8 +1,8 @@
+ # gh-91321: Build a basic C++ test extension to check that the Python C API is
+ # compatible with C++ and does not emit C++ compiler warnings.
+ import os
++import platform
+ import shlex
+-import sys
+ import sysconfig
+ from test import support
+ 
+@@ -10,6 +10,7 @@
+ 
+ 
+ SOURCE = 'extension.cpp'
++
+ if not support.MS_WINDOWS:
+     # C++ compiler flags for GCC and clang
+     CPPFLAGS = [
+@@ -19,34 +20,77 @@
+         '-Werror',
+     ]
+ else:
+-    # Don't pass any compiler flag to MSVC
+-    CPPFLAGS = []
++    # MSVC compiler flags
++    CPPFLAGS = [
++        # Display warnings level 1 to 4
++        '/W4',
++        # Treat all compiler warnings as compiler errors
++        '/WX',
++    ]
+ 
+ 
+ def main():
+     cppflags = list(CPPFLAGS)
+-    std = os.environ["CPYTHON_TEST_CPP_STD"]
+-    name = os.environ["CPYTHON_TEST_EXT_NAME"]
++    std = os.environ.get("CPYTHON_TEST_CPP_STD", "")
++    module_name = os.environ["CPYTHON_TEST_EXT_NAME"]
+ 
+-    cppflags = [*CPPFLAGS, f'-std={std}']
++    cppflags = list(CPPFLAGS)
++    cppflags.append(f'-DMODULE_NAME={module_name}')
++
++    # Add -std=STD or /std:STD (MSVC) compiler flag
++    if std:
++        if support.MS_WINDOWS:
++            cppflags.append(f'/std:{std}')
++        else:
++            cppflags.append(f'-std={std}')
+ 
+     # gh-105776: When "gcc -std=11" is used as the C++ compiler, -std=c11
+     # option emits a C++ compiler warning. Remove "-std11" option from the
+     # CC command.
+     cmd = (sysconfig.get_config_var('CC') or '')
+     if cmd is not None:
++        if support.MS_WINDOWS:
++            std_prefix = '/std'
++        else:
++            std_prefix = '-std'
+         cmd = shlex.split(cmd)
+-        cmd = [arg for arg in cmd if not arg.startswith('-std=')]
++        cmd = [arg for arg in cmd if not arg.startswith(std_prefix)]
+         cmd = shlex.join(cmd)
+         # CC env var overrides sysconfig CC variable in setuptools
+         os.environ['CC'] = cmd
+ 
+-    cpp_ext = Extension(
+-        name,
++    # On Windows, add PCbuild\amd64\ to include and library directories
++    include_dirs = []
++    library_dirs = []
++    if support.MS_WINDOWS:
++        srcdir = sysconfig.get_config_var('srcdir')
++        machine = platform.uname().machine
++        pcbuild = os.path.join(srcdir, 'PCbuild', machine)
++        if os.path.exists(pcbuild):
++            # pyconfig.h is generated in PCbuild\amd64\
++            include_dirs.append(pcbuild)
++            # python313.lib is generated in PCbuild\amd64\
++            library_dirs.append(pcbuild)
++            print(f"Add PCbuild directory: {pcbuild}")
++
++    # Display information to help debugging
++    for env_name in ('CC', 'CFLAGS', 'CPPFLAGS'):
++        if env_name in os.environ:
++            print(f"{env_name} env var: {os.environ[env_name]!r}")
++        else:
++            print(f"{env_name} env var: <missing>")
++    print(f"extra_compile_args: {cppflags!r}")
++
++    ext = Extension(
++        module_name,
+         sources=[SOURCE],
+         language='c++',
+-        extra_compile_args=cppflags)
+-    setup(name='internal' + name, version='0.0', ext_modules=[cpp_ext])
++        extra_compile_args=cppflags,
++        include_dirs=include_dirs,
++        library_dirs=library_dirs)
++    setup(name=f'internal_{module_name}',
++          version='0.0',
++          ext_modules=[ext])
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/Lib/test/test_exceptions.py b/Lib/test/test_exceptions.py
+index 72c86eecae2..f4f2011a51a 100644
+--- a/Lib/test/test_exceptions.py
++++ b/Lib/test/test_exceptions.py
+@@ -2195,6 +2195,22 @@ def test_range_of_offsets(self):
+                     self.assertIn(expected, err.getvalue())
+                     the_exception = exc
+ 
++    def test_subclass(self):
++        class MySyntaxError(SyntaxError):
++            pass
++
++        try:
++            raise MySyntaxError("bad bad", ("bad.py", 1, 2, "abcdefg", 1, 7))
++        except SyntaxError as exc:
++            with support.captured_stderr() as err:
++                sys.__excepthook__(*sys.exc_info())
++            self.assertIn("""
++  File "bad.py", line 1
++    abcdefg
++     ^^^^^
++""", err.getvalue())
++
++
+     def test_encodings(self):
+         self.addCleanup(unlink, TESTFN)
+         source = (
+diff --git a/Lib/test/test_http_cookies.py b/Lib/test/test_http_cookies.py
+index 8879902a6e2..7b3dc0fdaed 100644
+--- a/Lib/test/test_http_cookies.py
++++ b/Lib/test/test_http_cookies.py
+@@ -59,6 +59,52 @@ def test_basic(self):
+             for k, v in sorted(case['dict'].items()):
+                 self.assertEqual(C[k].value, v)
+ 
++    def test_obsolete_rfc850_date_format(self):
++        # Test cases with different days and dates in obsolete RFC 850 format
++        test_cases = [
++            # from RFC 850, change EST to GMT
++            # https://datatracker.ietf.org/doc/html/rfc850#section-2
++            {
++                'data': 'key=value; expires=Saturday, 01-Jan-83 00:00:00 GMT',
++                'output': 'Saturday, 01-Jan-83 00:00:00 GMT'
++            },
++            {
++                'data': 'key=value; expires=Friday, 19-Nov-82 16:59:30 GMT',
++                'output': 'Friday, 19-Nov-82 16:59:30 GMT'
++            },
++            # from RFC 9110
++            # https://www.rfc-editor.org/rfc/rfc9110.html#section-5.6.7-6
++            {
++                'data': 'key=value; expires=Sunday, 06-Nov-94 08:49:37 GMT',
++                'output': 'Sunday, 06-Nov-94 08:49:37 GMT'
++            },
++            # other test cases
++            {
++                'data': 'key=value; expires=Wednesday, 09-Nov-94 08:49:37 GMT',
++                'output': 'Wednesday, 09-Nov-94 08:49:37 GMT'
++            },
++            {
++                'data': 'key=value; expires=Friday, 11-Nov-94 08:49:37 GMT',
++                'output': 'Friday, 11-Nov-94 08:49:37 GMT'
++            },
++            {
++                'data': 'key=value; expires=Monday, 14-Nov-94 08:49:37 GMT',
++                'output': 'Monday, 14-Nov-94 08:49:37 GMT'
++            },
++        ]
++
++        for case in test_cases:
++            with self.subTest(data=case['data']):
++                C = cookies.SimpleCookie()
++                C.load(case['data'])
++
++                # Extract the cookie name from the data string
++                cookie_name = case['data'].split('=')[0]
++
++                # Check if the cookie is loaded correctly
++                self.assertIn(cookie_name, C)
++                self.assertEqual(C[cookie_name].get('expires'), case['output'])
++
+     def test_unquote(self):
+         cases = [
+             (r'a="b=\""', 'b="'),
+diff --git a/Lib/test/test_long.py b/Lib/test/test_long.py
+index d299c34cec0..41b973da2c7 100644
+--- a/Lib/test/test_long.py
++++ b/Lib/test/test_long.py
+@@ -1639,6 +1639,8 @@ class MyInt(int):
+                     MyInt.__basicsize__ + MyInt.__itemsize__ * ndigits
+                 )
+ 
++        # GH-117195 -- This shouldn't crash
++        object.__sizeof__(1)
+ 
+ if __name__ == "__main__":
+     unittest.main()
+diff --git a/Lib/test/test_readline.py b/Lib/test/test_readline.py
+index fab124ae4ad..e8a92f2b912 100644
+--- a/Lib/test/test_readline.py
++++ b/Lib/test/test_readline.py
+@@ -114,6 +114,14 @@ def test_write_read_append(self):
+         # write_history_file can create the target
+         readline.write_history_file(hfilename)
+ 
++        # Negative values should be disallowed
++        with self.assertRaises(ValueError):
++            readline.append_history_file(-42, hfilename)
++
++        # See gh-122431, using the minimum signed integer value caused a segfault
++        with self.assertRaises(ValueError):
++            readline.append_history_file(-2147483648, hfilename)
++
+     def test_nonascii_history(self):
+         readline.clear_history()
+         try:
+diff --git a/Lib/urllib/request.py b/Lib/urllib/request.py
+index 9a559f44152..c7ded0f67fc 100644
+--- a/Lib/urllib/request.py
++++ b/Lib/urllib/request.py
+@@ -903,9 +903,9 @@ def find_user_password(self, realm, authuri):
+ 
+ class HTTPPasswordMgrWithPriorAuth(HTTPPasswordMgrWithDefaultRealm):
+ 
+-    def __init__(self, *args, **kwargs):
++    def __init__(self):
+         self.authenticated = {}
+-        super().__init__(*args, **kwargs)
++        super().__init__()
+ 
+     def add_password(self, realm, uri, user, passwd, is_authenticated=False):
+         self.update_authenticated(uri, is_authenticated)
+diff --git a/Modules/posixmodule.c b/Modules/posixmodule.c
+index d5298519b58..82078a56988 100644
+--- a/Modules/posixmodule.c
++++ b/Modules/posixmodule.c
+@@ -61,6 +61,9 @@
+ 
+ #include <stdio.h>                // ctermid()
+ #include <stdlib.h>               // system()
++#ifdef HAVE_SYS_PIDFD_H
++#  include <sys/pidfd.h>          // PIDFD_NONBLOCK
++#endif
+ 
+ /*
+  * A number of APIs are available on macOS from a certain macOS version.
+diff --git a/Modules/readline.c b/Modules/readline.c
+index 0b6f96fdbfd..db2e7e35a49 100644
+--- a/Modules/readline.c
++++ b/Modules/readline.c
+@@ -336,6 +336,12 @@ readline_append_history_file_impl(PyObject *module, int nelements,
+                                   PyObject *filename_obj)
+ /*[clinic end generated code: output=5df06fc9da56e4e4 input=784b774db3a4b7c5]*/
+ {
++    if (nelements < 0)
++    {
++        PyErr_SetString(PyExc_ValueError, "nelements must be positive");
++        return NULL;
++    }
++
+     PyObject *filename_bytes;
+     const char *filename;
+     int err;
+diff --git a/Objects/dictobject.c b/Objects/dictobject.c
+index 4e965314945..7337e290e89 100644
+--- a/Objects/dictobject.c
++++ b/Objects/dictobject.c
+@@ -458,11 +458,14 @@ estimate_log2_keysize(Py_ssize_t n)
+ 
+ /* This immutable, empty PyDictKeysObject is used for PyDict_Clear()
+  * (which cannot fail and thus can do no allocation).
++ *
++ * See https://github.com/python/cpython/pull/127568#discussion_r1868070614
++ * for the rationale of using dk_log2_index_bytes=3 instead of 0.
+  */
+ static PyDictKeysObject empty_keys_struct = {
+         _Py_IMMORTAL_REFCNT, /* dk_refcnt */
+         0, /* dk_log2_size */
+-        0, /* dk_log2_index_bytes */
++        3, /* dk_log2_index_bytes */
+         DICT_KEYS_UNICODE, /* dk_kind */
+         1, /* dk_version */
+         0, /* dk_usable (immutable) */
+diff --git a/Objects/typeobject.c b/Objects/typeobject.c
+index 5bca4b4e788..06857e36857 100644
+--- a/Objects/typeobject.c
++++ b/Objects/typeobject.c
+@@ -6462,8 +6462,11 @@ object___sizeof___impl(PyObject *self)
+ 
+     res = 0;
+     isize = Py_TYPE(self)->tp_itemsize;
+-    if (isize > 0)
+-        res = Py_SIZE(self) * isize;
++    if (isize > 0) {
++        /* This assumes that ob_size is valid if tp_itemsize is not 0,
++         which isn't true for PyLongObject. */
++        res = _PyVarObject_CAST(self)->ob_size * isize;
++    }
+     res += Py_TYPE(self)->tp_basicsize;
+ 
+     return PyLong_FromSsize_t(res);
+diff --git a/Python/pythonrun.c b/Python/pythonrun.c
+index 5f3d249df45..cf84573a8e6 100644
+--- a/Python/pythonrun.c
++++ b/Python/pythonrun.c
+@@ -538,43 +538,37 @@ parse_syntax_error(PyObject *err, PyObject **message, PyObject **filename,
+         *offset = hold;
+     }
+ 
+-    if (Py_TYPE(err) == (PyTypeObject*)PyExc_SyntaxError) {
+-        v = PyObject_GetAttr(err, &_Py_ID(end_lineno));
+-        if (!v) {
+-            PyErr_Clear();
+-            *end_lineno = *lineno;
+-        }
+-        else if (v == Py_None) {
+-            *end_lineno = *lineno;
+-            Py_DECREF(v);
+-        } else {
+-            hold = PyLong_AsSsize_t(v);
+-            Py_DECREF(v);
+-            if (hold < 0 && PyErr_Occurred())
+-                goto finally;
+-            *end_lineno = hold;
+-        }
+-
+-        v = PyObject_GetAttr(err, &_Py_ID(end_offset));
+-        if (!v) {
+-            PyErr_Clear();
+-            *end_offset = -1;
+-        }
+-        else if (v == Py_None) {
+-            *end_offset = -1;
+-            Py_DECREF(v);
+-        } else {
+-            hold = PyLong_AsSsize_t(v);
+-            Py_DECREF(v);
+-            if (hold < 0 && PyErr_Occurred())
+-                goto finally;
+-            *end_offset = hold;
+-        }
+-    } else {
+-        // SyntaxError subclasses
++    v = PyObject_GetAttr(err, &_Py_ID(end_lineno));
++    if (!v) {
++        PyErr_Clear();
+         *end_lineno = *lineno;
++    }
++    else if (v == Py_None) {
++        *end_lineno = *lineno;
++        Py_DECREF(v);
++    } else {
++        hold = PyLong_AsSsize_t(v);
++        Py_DECREF(v);
++        if (hold < 0 && PyErr_Occurred())
++            goto finally;
++        *end_lineno = hold;
++    }
++
++    v = PyObject_GetAttr(err, &_Py_ID(end_offset));
++    if (!v) {
++        PyErr_Clear();
+         *end_offset = -1;
+     }
++    else if (v == Py_None) {
++        *end_offset = -1;
++        Py_DECREF(v);
++    } else {
++        hold = PyLong_AsSsize_t(v);
++        Py_DECREF(v);
++        if (hold < 0 && PyErr_Occurred())
++            goto finally;
++        *end_offset = hold;
++    }
+ 
+     v = PyObject_GetAttr(err, &_Py_ID(text));
+     if (!v)
+diff --git a/configure.ac b/configure.ac
+index 9270b5f7172..de9d7f56ffb 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -2874,7 +2874,7 @@ AC_CHECK_HEADERS([ \
+   linux/tipc.h linux/wait.h netdb.h net/ethernet.h netinet/in.h netpacket/packet.h poll.h process.h pthread.h pty.h \
+   sched.h setjmp.h shadow.h signal.h spawn.h stropts.h sys/audioio.h sys/bsdtty.h sys/devpoll.h \
+   sys/endian.h sys/epoll.h sys/event.h sys/eventfd.h sys/file.h sys/ioctl.h sys/kern_control.h \
+-  sys/loadavg.h sys/lock.h sys/memfd.h sys/mkdev.h sys/mman.h sys/modem.h sys/param.h sys/poll.h \
++  sys/loadavg.h sys/lock.h sys/memfd.h sys/mkdev.h sys/mman.h sys/modem.h sys/param.h sys/pidfd.h sys/poll.h \
+   sys/random.h sys/resource.h sys/select.h sys/sendfile.h sys/socket.h sys/soundcard.h sys/stat.h \
+   sys/statvfs.h sys/sys_domain.h sys/syscall.h sys/sysmacros.h sys/termio.h sys/time.h sys/times.h \
+   sys/types.h sys/uio.h sys/un.h sys/utsname.h sys/wait.h sys/xattr.h sysexits.h syslog.h \
+diff --git a/pyconfig.h.in b/pyconfig.h.in
+index 7d3537e5dd8..167c6a11411 100644
+--- a/pyconfig.h.in
++++ b/pyconfig.h.in
+@@ -1332,6 +1332,9 @@
+ /* Define to 1 if you have the <sys/param.h> header file. */
+ #undef HAVE_SYS_PARAM_H
+ 
++/* Define to 1 if you have the <sys/pidfd.h> header file. */
++#undef HAVE_SYS_PIDFD_H
++
+ /* Define to 1 if you have the <sys/poll.h> header file. */
+ #undef HAVE_SYS_POLL_H
+ 

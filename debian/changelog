@@ -1,9 +1,182 @@
-python3.12 (3.12.4-0deepin1) unstable; urgency=medium
+python3.12 (3.12.8-3deepin1) UNRELEASED; urgency=medium
+
+  * Revert t64 changes.
+
+ -- Tianyu Chen <sweetyfish@deepin.org>  Wed, 18 Dec 2024 18:05:18 +0800
+
+python3.12 (3.12.8-3) unstable; urgency=medium
+
+  * Update to the 3.12 branch 2024-12-13.
+    - Make sure extern "C" is closed when using Py_LIMITED_API (#127904).
+      Closes: #1089823.
+
+ -- Matthias Klose <doko@debian.org>  Fri, 13 Dec 2024 14:19:48 +0100
+
+python3.12 (3.12.8-2) unstable; urgency=medium
+
+  * Update to the 3.12 branch 2024-12-12.
+    - Fix issue #127655, CVE-2024-12254.
+  * Add support for OpenSSL 3.4, issue #127330.
+
+ -- Matthias Klose <doko@debian.org>  Thu, 12 Dec 2024 11:32:36 +0100
+
+python3.12 (3.12.8-1) unstable; urgency=medium
+
+  * Python 3.12.8 release.
+  * Refresh patches.
+
+ -- Stefano Rivera <stefanor@debian.org>  Wed, 04 Dec 2024 08:15:27 -0400
+
+python3.12 (3.12.7-3) unstable; urgency=medium
+
+  * Strip the trailing + from PY_VERSION, again. (Closes: #1087011)
+
+ -- Stefano Rivera <stefanor@debian.org>  Fri, 08 Nov 2024 09:55:36 -0800
+
+python3.12 (3.12.7-2) unstable; urgency=medium
+
+  * Update symbols file.
+  * Apply git updates to 2024-11-03.
+  * Adjust lib-argparse.diff to avoid failing test_argparse's translation
+    test.
+
+ -- Stefano Rivera <stefanor@debian.org>  Mon, 04 Nov 2024 20:56:37 -0800
+
+python3.12 (3.12.7-1) unstable; urgency=medium
+
+  * Python 3.12.7 release.
+  * Refresh patches.
+  * Build-Depend on python3-{pip,setuptools,wheel}-whl for tests.
+  * Verify upstream PGP signature.
+  * Patch: Strip absolute --libdir paths from configure args in test_freeze.
+
+ -- Stefano Rivera <stefanor@debian.org>  Thu, 03 Oct 2024 09:15:22 -0600
+
+python3.12 (3.12.6-1) unstable; urgency=medium
+
+  * Python 3.12.6 release.
+    - Fixes: CVE-2015-2104, CVE-2023-27043 (Closes: #1059299), CVE-2024-4030,
+      CVE-2024-4032, CVE-2024-6232, CVE-2024-6923, CVE-2024-7592, and
+      CVE-2024-8088.
+  * Refresh patches.
+  * Remove debian/locale-gen, we use locales-all. (Closes: #1076778)
+  * Re-enable build-time tests. (Closes: #1076779)
+    - Build-Depend on xvfb and xauth again.
+
+ -- Stefano Rivera <stefanor@debian.org>  Sat, 07 Sep 2024 16:20:15 +0200
+
+python3.12 (3.12.5-4) unstable; urgency=medium
+
+  * python3.x-tk: Make byte-compilation depend on the availability of
+    the interpreter.
+
+ -- Matthias Klose <doko@debian.org>  Thu, 22 Aug 2024 15:11:09 +0200
+
+python3.12 (3.12.5-3) unstable; urgency=medium
+
+  * Add python3.x-tk maintainer scripts.
+  * Call dpkg with LC_ALL=C.UTF8 set.
+
+ -- Matthias Klose <doko@debian.org>  Thu, 22 Aug 2024 09:49:39 +0200
+
+python3.12 (3.12.5-2) experimental; urgency=medium
+
+  * Build python3.12-gdbm and python3.12-tk packages again; Having these
+    extensions hidden in the libpython-stdlib packages raises some chrootkit
+    warnings. These packages should not be used as dependencies, and do not
+    depend on the Python interpreter.  For dependencies, the existing
+    python3-gdbm and python3-tk packages should be used.
+
+ -- Matthias Klose <doko@debian.org>  Wed, 21 Aug 2024 09:45:53 +0200
+
+python3.12 (3.12.5-1) unstable; urgency=medium
+
+  * Python 3.12.5 release.
+  * libpython-stdlib: Include the _gdbm and _tkinter extensions, prefixed
+    with a dot, and no dependencies on the gbm and tcl/tk libraries.
+  * Refresh patches.
+  * Bump standards version.
+
+ -- Matthias Klose <doko@debian.org>  Wed, 07 Aug 2024 15:49:14 +0200
+
+python3.12 (3.12.4-3) unstable; urgency=medium
+
+  [ Matthias Klose ]
+  * Set ELF_PACKAGE_METADATA, if unset.
+  * Fix multiarch path for hurd-amd64. Closes: #1076321.
+  * Don't configure -with-dtrace on the Hurd. Closes: #1065456.
+  * Update from the 3.12 branch 2024-07-15.
+
+  [ Benjamin Drung ]
+  * debian/rules: Use pkg-info.mk.
+  * debian/rules: Use architecture.mk.
+  * Rely on SOURCE_DATE_EPOCH for reproducibility.
+
+  [ Graham Inggs ]
+  * Drop test dependencies on python3-distutils.
+  * Skip test_exceptions and test_repl which never run to
+    completion on the Ubuntu autopkgtest infrastructure.
+
+ -- Matthias Klose <doko@debian.org>  Mon, 15 Jul 2024 14:17:32 +0200
+
+python3.12 (3.12.4-1) unstable; urgency=medium
 
   * Python 3.12.4 release.
   * Refresh patches.
+  * Patch: Ignore test/wheeldata completely in test_makefile.
 
- -- Tianyu Chen <sweetyfish@deepin.org>  Tue, 09 Jul 2024 11:31:23 +0200
+ -- Stefano Rivera <stefanor@debian.org>  Wed, 12 Jun 2024 20:06:53 +0100
+
+python3.12 (3.12.3-1) unstable; urgency=medium
+
+  * Python 3.12.3 release.
+
+ -- Matthias Klose <doko@debian.org>  Wed, 10 Apr 2024 07:33:47 +0200
+
+python3.12 (3.12.2-5) unstable; urgency=medium
+
+  * Update to the 3.12 branch 2024-02-02.
+    - Make C API compatible with ISO C90 (GH-116950). Closes: #1064028.
+    - Upstream patch for GH-115874.
+    - Still identify as "3.12.2", because "3.12.2+" is mis-treated by some
+      third-party packages.
+  * Use CFLAGS_NODIST, LDFLAGS_NODIST for passing build flags.
+  * d/rules: Move configure/build targets for each build together.
+  * Drop ffi configure options, obsolete.
+  * Re-enable PGO/LTO builds.
+
+ -- Matthias Klose <doko@debian.org>  Tue, 02 Apr 2024 16:53:02 +0200
+
+python3.12 (3.12.2-4) unstable; urgency=medium
+
+  [ Stefano Rivera ]
+  * Build-Depend on libnsl-dev for NIS support. Closes: #1065128.
+
+  [ Matthias Klose ]
+  * Fix override files for renamed t64 packages.
+  * Fix package names in PVER-dbg maintainer scripts. Addresses: #1065164.
+  * Really build without LTO when requested.
+  * Disable LTO builds and testsuite for now (mesa t64 transition ...).
+
+ -- Matthias Klose <doko@debian.org>  Sun, 03 Mar 2024 10:11:00 +0100
+
+python3.12 (3.12.2-3) unstable; urgency=medium
+
+  * Actually apply the teedataobject_clear patch. Closes: #1063345.
+
+ -- Stefano Rivera <stefanor@debian.org>  Thu, 29 Feb 2024 11:43:19 -0400
+
+python3.12 (3.12.2-2) unstable; urgency=medium
+
+  [ Colin Watson ]
+  * Don't rely on module state in teedataobject_clear (from Brandt Bucher in
+    https://github.com/python/cpython/issues/115874). Closes: #1063345.
+
+  [ Steve Langasek ]
+  * Rename libraries for 64-bit time_t transition, declare X-Time64-Compat
+    to get proper Provides (Steve Langasek). Closes: #1064336.
+
+ -- Matthias Klose <doko@debian.org>  Thu, 29 Feb 2024 02:56:09 +0100
 
 python3.12 (3.12.2-1) unstable; urgency=medium
 

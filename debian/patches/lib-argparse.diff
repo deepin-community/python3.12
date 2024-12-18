@@ -6,7 +6,7 @@ Forwarded: not-needed
 
 --- a/Lib/argparse.py
 +++ b/Lib/argparse.py
-@@ -91,7 +91,16 @@
+@@ -91,7 +91,18 @@
  
  import warnings
  
@@ -14,8 +14,10 @@ Forwarded: not-needed
 +try:
 +    from gettext import gettext as _, ngettext
 +except ImportError:
-+    def _(message):
++    def gettext(message):
 +        return message
++    _ = gettext  # avoid the definition above looking like a translated string
++    del gettext
 +    def ngettext(singular,plural,n):
 +        if n == 1:
 +            return singular

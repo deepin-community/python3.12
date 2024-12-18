@@ -9,18 +9,25 @@ Build-Depends: debhelper (>= 11), dpkg-dev (>= 1.17.11),
   libreadline-dev | libeditreadline-dev, libncurses-dev, 
   zlib1g-dev, libbz2-dev, liblzma-dev,
   libgdbm-dev, libdb-dev,
-  tk-dev, blt-dev (>= 2.4z), libssl-dev,
+  tk-dev, blt-dev (>= 2.4z),
+  libssl-dev,
   libexpat1-dev,
   libbluetooth-dev [linux-any] <!pkg.python3.12.nobluetooth>,
   locales-all,
+  libnsl-dev,
   libsqlite3-dev, libffi-dev (>= 3.0.5) [!or1k],
   libgpm2 [linux-any],
   media-types | mime-support, netbase, bzip2, time, python3:any, python3.12:any <cross>,
-  net-tools, xvfb <!nocheck>, xauth <!nocheck>, tzdata <!nocheck>,
+  net-tools,
+  python3-pip-whl <!nocheck>,
+  python3-setuptools-whl <!nocheck>,
+  python3-wheel-whl <!nocheck>,
+  xvfb <!nocheck>, xauth <!nocheck>,
+  tzdata <!nocheck>,
   systemtap-sdt-dev [!hurd-amd64 !hurd-i386],
   valgrind-if-available,
 Build-Depends-Indep: python3-sphinx, python3-docs-theme, texinfo
-Standards-Version: 4.6.2
+Standards-Version: 4.7.0
 Vcs-Browser: https://salsa.debian.org/cpython-team/python3
 Vcs-Git: https://salsa.debian.org/cpython-team/python3.git
 XS-Testsuite: autopkgtest
@@ -240,8 +247,10 @@ Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
 Depends: libpython3.12-stdlib (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Breaks: python3-gdbm-dbg (<< 3.9.9-1~)
-Replaces: python3-gdbm-dbg (<< 3.9.9-1~)
+Breaks: libpython3.12-dbg (<< ${source:Version}),
+  python3-gdbm-dbg (<< 3.12.5-2~), python3-tk-dbg (<< 3.12.5-2~)
+Replaces: libpython3.12-dbg,
+  python3-gdbm-dbg (<< 3.12.5-2~), python3-tk-dbg (<< 3.12.5-2~)
 Description: Debug Build of the Python Interpreter (version 3.12)
  The package holds two things:
  .
@@ -276,3 +285,25 @@ Description: Python Interpreter with complete class library (version 3.12)
  .
  According to the Debian Python policy, this package must not be used in
  build dependencies, dependencies and recommendations.
+
+Package: python3.12-tk
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Enhances: python3.12
+Suggests: tix
+Breaks: python3-tk (<< 3.12.5-2~)
+Replaces: python3-tk (<< 3.12.5-2~)
+XB-Python-Version: 3.12
+Description: Tkinter - Writing Tk applications with Python (v3.12)
+ A module for writing portable GUI applications with Python (v3.12) using Tk.
+ Also known as Tkinter.
+
+Package: python3.12-gdbm
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Enhances: python3.12
+Breaks: python3-gdbm (<< 3.12.5-2~)
+Replaces: python3-gdbm (<< 3.12.5-2~)
+Description: GNU dbm database support for Python (v3.12)
+ GNU dbm database module for Python. Install this if you want to
+ create or read GNU dbm database files with Python.

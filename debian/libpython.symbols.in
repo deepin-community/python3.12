@@ -1567,6 +1567,9 @@
  _PyUnicode_FromASCII@Base @SVER@
  _PyUnicode_FromId@Base @SVER@
  _PyUnicode_InsertThousandsGrouping@Base @SVER@
+ _PyUnicode_InternImmortal@Base @SVER@
+ _PyUnicode_InternInPlace@Base @SVER@
+ _PyUnicode_InternMortal@Base @SVER@
  _PyUnicode_IsAlpha@Base @SVER@
  _PyUnicode_IsCaseIgnorable@Base @SVER@
  _PyUnicode_IsCased@Base @SVER@

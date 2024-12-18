@@ -31,8 +31,10 @@ debian_dir=$(dirname $(dirname $0))
 
 TESTPYTHON="python3.12 -W default -bb -E -R -m test"
 TESTEXCLUSIONS="-x"
+TESTNEVERCOMPLETE=""
 
 . $debian_dir/tests/test-common.sh
+TESTEXCLUSIONS="$TESTEXCLUSIONS $TESTNEVERCOMPLETE"
 
 if [ "$su_user" = nobody ]; then
   log=/dev/null
