@@ -1,3 +1,9 @@
+python3.12 (3.12.11-0deepin2) unstable; urgency=medium
+
+  * feat: add sw64 support.
+
+ -- hudeng <hudeng@deepin.org>  Wed, 04 Jun 2025 11:07:55 +0800
+
 python3.12 (3.12.11-0deepin1) unstable; urgency=medium
 
   * Python 3.12.11 release.

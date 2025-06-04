@@ -18,6 +18,11 @@ DEB_HOST_ARCH_OS	?= $(call vafilt,$(DPKG_VARS),DEB_HOST_ARCH_OS)
 DEB_HOST_GNU_TYPE	?= $(call vafilt,$(DPKG_VARS),DEB_HOST_GNU_TYPE)
 DEB_HOST_MULTIARCH	?= $(call vafilt,$(DPKG_VARS),DEB_HOST_MULTIARCH)
 
+ifeq ($(DEB_HOST_ARCH),sw64)
+  DEB_BUILD_OPTIONS += nocheck
+  DEB_BUILD_OPTIONS += nobench
+endif
+
 ifeq ($(DEB_HOST_ARCH_OS),linux)
   PLAT = linux
 else ifeq ($(DEB_HOST_ARCH_OS),kfreebsd)
@@ -613,14 +618,14 @@ ifneq (,$(filter $(DEB_HOST_ARCH), arm armel m68k))
 endif
 TEST_EXCLUDES += test_ttk_guionly
 # https://buildd.debian.org/status/logs.php?pkg=python3.5&ver=3.5.1-1&arch=alpha&suite=sid
-ifneq (,$(filter $(DEB_HOST_ARCH), alpha))
+ifneq (,$(filter $(DEB_HOST_ARCH), alpha sw64))
   TEST_EXCLUDES += test_signal
 endif
 ifneq (,$(filter $(DEB_HOST_ARCH), sparc sparc64))
   TEST_EXCLUDES += test_gdb
 endif
 
-ifneq (,$(filter $(DEB_HOST_ARCH), alpha armhf riscv64 sparc64))
+ifneq (,$(filter $(DEB_HOST_ARCH), alpha armhf riscv64 sparc64 sw64))
   TEST_EXCLUDES += test_concurrent_futures
 endif
 
@@ -668,7 +673,7 @@ else
 	@env
 	@echo ========================================
 
-  ifeq (,$(findstring $(DEB_HOST_ARCH), alpha))
+  ifeq (,$(findstring $(DEB_HOST_ARCH), alpha sw64))
 	( \
 	  echo '#! /bin/sh'; \
 	  echo 'set -x'; \
