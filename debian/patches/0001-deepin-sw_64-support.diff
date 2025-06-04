@@ -1,0 +1,65 @@
+Index: python3.12/Lib/test/test_sysconfig.py
+===================================================================
+--- python3.12.orig/Lib/test/test_sysconfig.py
++++ python3.12/Lib/test/test_sysconfig.py
+@@ -505,7 +505,7 @@ class TestSysConfig(unittest.TestCase):
+         import platform, re
+         machine = platform.machine()
+         suffix = sysconfig.get_config_var('EXT_SUFFIX')
+-        if re.match('(aarch64|arm|mips|ppc|powerpc|s390|sparc)', machine):
++        if re.match('(aarch64|arm|mips|ppc|powerpc|s390|sparc|sw_64)', machine):
+             self.assertTrue('linux' in suffix, suffix)
+         if re.match('(i[3-6]86|x86_64)$', machine):
+             if ctypes.sizeof(ctypes.c_char_p()) == 4:
+Index: python3.12/config.guess
+===================================================================
+--- python3.12.orig/config.guess
++++ python3.12/config.guess
+@@ -1140,6 +1140,9 @@ EOF
+     sparc:Linux:*:* | sparc64:Linux:*:*)
+ 	GUESS=$UNAME_MACHINE-unknown-linux-$LIBC
+ 	;;
++	sw_64:Linux:*:*)
++	GUESS=$UNAME_MACHINE-unknown-linux-$LIBC
++	;;
+     tile*:Linux:*:*)
+ 	GUESS=$UNAME_MACHINE-unknown-linux-$LIBC
+ 	;;
+Index: python3.12/config.sub
+===================================================================
+--- python3.12.orig/config.sub
++++ python3.12/config.sub
+@@ -1262,6 +1262,7 @@ case $cpu-$vendor in
+ 			| sparclite \
+ 			| sparcv8 | sparcv9 | sparcv9b | sparcv9v | sv1 | sx* \
+ 			| spu \
++			| sw_64\
+ 			| tahoe \
+ 			| thumbv7* \
+ 			| tic30 | tic4x | tic54x | tic55x | tic6x | tic80 \
+Index: python3.12/configure
+===================================================================
+--- python3.12.orig/configure
++++ python3.12/configure
+@@ -6891,6 +6891,8 @@ cat > conftest.c <<EOF
+         riscv32-linux-gnu
+ #  elif __riscv_xlen == 64
+         riscv64-linux-gnu
++# elif defined(__sw_64__)
++        sw_64-linux-gnu
+ #  else
+ #   error unknown platform triplet
+ #  endif
+Index: python3.12/configure.ac
+===================================================================
+--- python3.12.orig/configure.ac
++++ python3.12/configure.ac
+@@ -1063,6 +1063,8 @@ cat > conftest.c <<EOF
+ #  else
+ #   error unknown platform triplet
+ #  endif
++# elif defined(__sw_64__)
++        sw_64-linux-gnu
+ # else
+ #   error unknown platform triplet
+ # endif

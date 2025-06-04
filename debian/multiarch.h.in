@@ -103,6 +103,8 @@
 #  else
 #    include <riscv32-linux-gnu/@subdir@/@header@>
 #  endif
+# elif defined(__sw_64__)
+#  include <sw_64-linux-gnu/@subdir@/@header@>
 # else
 #   error unknown multiarch location for @header@
 # endif
