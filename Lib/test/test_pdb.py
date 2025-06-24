@@ -352,6 +352,42 @@ def test_pdb_breakpoint_commands():
     4
     """
 
+def test_pdb_breakpoint_on_annotated_function_def():
+    """Test breakpoints on function definitions with annotation.
+
+    >>> def foo[T]():
+    ...     return 0
+
+    >>> def bar() -> int:
+    ...     return 0
+
+    >>> def foobar[T]() -> int:
+    ...     return 0
+
+    >>> reset_Breakpoint()
+
+    >>> def test_function():
+    ...     import pdb; pdb.Pdb(nosigint=True, readrc=False).set_trace()
+    ...     pass
+
+    >>> with PdbTestInput([  # doctest: +NORMALIZE_WHITESPACE
+    ...     'break foo',
+    ...     'break bar',
+    ...     'break foobar',
+    ...     'continue',
+    ... ]):
+    ...    test_function()
+    > <doctest test.test_pdb.test_pdb_breakpoint_on_annotated_function_def[4]>(3)test_function()
+    -> pass
+    (Pdb) break foo
+    Breakpoint 1 at <doctest test.test_pdb.test_pdb_breakpoint_on_annotated_function_def[0]>:1
+    (Pdb) break bar
+    Breakpoint 2 at <doctest test.test_pdb.test_pdb_breakpoint_on_annotated_function_def[1]>:1
+    (Pdb) break foobar
+    Breakpoint 3 at <doctest test.test_pdb.test_pdb_breakpoint_on_annotated_function_def[2]>:1
+    (Pdb) continue
+    """
+
 def test_pdb_breakpoints_preserved_across_interactive_sessions():
     """Breakpoints are remembered between interactive sessions
 
@@ -446,6 +482,38 @@ def test_pdb_pp_repr_exc():
     (Pdb) continue
     """
 
+def test_pdb_empty_line():
+    """Test that empty line repeats the last command.
+
+    >>> def test_function():
+    ...     x = 1
+    ...     import pdb; pdb.Pdb(nosigint=True, readrc=False).set_trace()
+    ...     pass
+    ...     y = 2
+
+    >>> with PdbTestInput([  # doctest: +NORMALIZE_WHITESPACE
+    ...     'p x',
+    ...     '',  # Should repeat p x
+    ...     'n ;; p 0 ;; p x',  # Fill cmdqueue with multiple commands
+    ...     '',  # Should still repeat p x
+    ...     'continue',
+    ... ]):
+    ...    test_function()
+    > <doctest test.test_pdb.test_pdb_empty_line[0]>(4)test_function()
+    -> pass
+    (Pdb) p x
+    1
+    (Pdb)
+    1
+    (Pdb) n ;; p 0 ;; p x
+    0
+    1
+    > <doctest test.test_pdb.test_pdb_empty_line[0]>(5)test_function()
+    -> y = 2
+    (Pdb)
+    1
+    (Pdb) continue
+    """
 
 def do_nothing():
     pass
@@ -1913,6 +1981,58 @@ def test_pdb_ambiguous_statements():
     (Pdb) continue
     """
 
+def test_pdb_frame_refleak():
+    """
+    pdb should not leak reference to frames
+
+    >>> def frame_leaker(container):
+    ...     import sys
+    ...     container.append(sys._getframe())
+    ...     import pdb; pdb.Pdb(nosigint=True, readrc=False).set_trace()
+    ...     pass
+
+    >>> def test_function():
+    ...     import gc
+    ...     container = []
+    ...     frame_leaker(container)  # c
+    ...     print(len(gc.get_referrers(container[0])))
+    ...     container = []
+    ...     frame_leaker(container)  # n c
+    ...     print(len(gc.get_referrers(container[0])))
+    ...     container = []
+    ...     frame_leaker(container)  # r c
+    ...     print(len(gc.get_referrers(container[0])))
+
+    >>> with PdbTestInput([  # doctest: +NORMALIZE_WHITESPACE
+    ...     'continue',
+    ...     'next',
+    ...     'continue',
+    ...     'return',
+    ...     'continue',
+    ... ]):
+    ...    test_function()
+    > <doctest test.test_pdb.test_pdb_frame_refleak[0]>(5)frame_leaker()
+    -> pass
+    (Pdb) continue
+    1
+    > <doctest test.test_pdb.test_pdb_frame_refleak[0]>(5)frame_leaker()
+    -> pass
+    (Pdb) next
+    --Return--
+    > <doctest test.test_pdb.test_pdb_frame_refleak[0]>(5)frame_leaker()->None
+    -> pass
+    (Pdb) continue
+    1
+    > <doctest test.test_pdb.test_pdb_frame_refleak[0]>(5)frame_leaker()
+    -> pass
+    (Pdb) return
+    --Return--
+    > <doctest test.test_pdb.test_pdb_frame_refleak[0]>(5)frame_leaker()->None
+    -> pass
+    (Pdb) continue
+    1
+    """
+
 def test_pdb_issue_gh_65052():
     """See GH-65052
 
@@ -2250,6 +2370,50 @@ def bœr():
         res = '\n'.join([x.strip() for x in stdout.splitlines()])
         self.assertRegex(res, "Restarting .* with arguments:\na b c")
         self.assertRegex(res, "Restarting .* with arguments:\nd e f")
+
+    def test_issue58956(self):
+        # Set a breakpoint in a function that already exists on the call stack
+        # should enable the trace function for the frame.
+        script = """
+            import bar
+            def foo():
+                ret = bar.bar()
+                pass
+            foo()
+        """
+        commands = """
+            b bar.bar
+            c
+            b main.py:5
+            c
+            p ret
+            quit
+        """
+        bar = """
+            def bar():
+                return 42
+        """
+        with open('bar.py', 'w') as f:
+            f.write(textwrap.dedent(bar))
+        self.addCleanup(os_helper.unlink, 'bar.py')
+        stdout, stderr = self.run_pdb_script(script, commands)
+        lines = stdout.splitlines()
+        self.assertIn('-> pass', lines)
+        self.assertIn('(Pdb) 42', lines)
+
+    def test_step_into_botframe(self):
+        # gh-125422
+        # pdb should not be able to step into the botframe (bdb.py)
+        script = "x = 1"
+        commands = """
+            step
+            step
+            step
+            quit
+        """
+        stdout, _ = self.run_pdb_script(script, commands)
+        self.assertIn("The program finished", stdout)
+        self.assertNotIn("bdb.py", stdout)
 
     def test_pdbrc_basic(self):
         script = textwrap.dedent("""
@@ -2707,6 +2871,16 @@ def bœr():
         stdout, stderr = self._run_pdb(["gh93696_host.py"], commands)
         # verify that pdb found the source of the "frozen" function
         self.assertIn('x = "Sentinel string for gh-93696"', stdout, "Sentinel statement not found")
+
+    def test_empty_file(self):
+        script = ''
+        commands = 'q\n'
+        # We check that pdb stopped at line 0, but anything reasonable
+        # is acceptable here, as long as it does not halt
+        stdout, _ = self.run_pdb_script(script, commands)
+        self.assertIn('main.py(0)', stdout)
+        stdout, _ = self.run_pdb_module(script, commands)
+        self.assertIn('__main__.py(0)', stdout)
 
     def test_non_utf8_encoding(self):
         script_dir = os.path.join(os.path.dirname(__file__), 'encoded_modules')

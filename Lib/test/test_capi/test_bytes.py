@@ -52,6 +52,8 @@ class CAPITest(unittest.TestCase):
         self.assertEqual(fromstringandsize(b'abc'), b'abc')
         self.assertEqual(fromstringandsize(b'abc', 2), b'ab')
         self.assertEqual(fromstringandsize(b'abc\0def'), b'abc\0def')
+        self.assertEqual(fromstringandsize(b'a'), b'a')
+        self.assertEqual(fromstringandsize(b'a', 1), b'a')
         self.assertEqual(fromstringandsize(b'', 0), b'')
         self.assertEqual(fromstringandsize(NULL, 0), b'')
         self.assertEqual(len(fromstringandsize(NULL, 3)), 3)
@@ -90,6 +92,7 @@ class CAPITest(unittest.TestCase):
         # Test PyBytes_Size()
         size = _testcapi.bytes_size
 
+        self.assertEqual(size(b''), 0)
         self.assertEqual(size(b'abc'), 3)
         self.assertEqual(size(BytesSubclass(b'abc')), 3)
         self.assertRaises(TypeError, size, bytearray(b'abc'))

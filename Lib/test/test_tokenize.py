@@ -1,20 +1,20 @@
-from test import support
-from test.support import os_helper
+import os
+import re
+import token
+import unittest
 from tokenize import (tokenize, untokenize, NUMBER, NAME, OP,
                      STRING, ENDMARKER, ENCODING, tok_name, detect_encoding,
                      open as tokenize_open, Untokenizer, generate_tokens,
                      NEWLINE, _generate_tokens_from_c_tokenizer, DEDENT, TokenInfo,
                      TokenError)
 from io import BytesIO, StringIO
-import unittest
 from textwrap import dedent
 from unittest import TestCase, mock
+from test import support
 from test.test_grammar import (VALID_UNDERSCORE_LITERALS,
                                INVALID_UNDERSCORE_LITERALS)
 from test.support import os_helper
 from test.support.script_helper import run_test_script, make_script, run_python_until_end
-import os
-import token
 
 # Converts a source string into a list of textual representation
 # of the tokens such as:
@@ -233,7 +233,7 @@ def k(x):
     """)
 
     def test_float(self):
-        # Floating point numbers
+        # Floating-point numbers
         self.check_tokenize("x = 3.14159", """\
     NAME       'x'           (1, 0) (1, 1)
     OP         '='           (1, 2) (1, 3)
@@ -1204,6 +1204,31 @@ async def f():
     NAME       'x'           (1, 3) (1, 4)
     """)
 
+    def test_multiline_non_ascii_fstring(self):
+        self.check_tokenize("""\
+a = f'''
+    Autorzy, którzy tą jednostkę mają wpisani jako AKTUALNA -- czyli'''""", """\
+    NAME       'a'           (1, 0) (1, 1)
+    OP         '='           (1, 2) (1, 3)
+    FSTRING_START "f\'\'\'"        (1, 4) (1, 8)
+    FSTRING_MIDDLE '\\n    Autorzy, którzy tą jednostkę mają wpisani jako AKTUALNA -- czyli' (1, 8) (2, 68)
+    FSTRING_END "\'\'\'"         (2, 68) (2, 71)
+    """)
+
+    def test_multiline_non_ascii_fstring_with_expr(self):
+        self.check_tokenize("""\
+f'''
+    🔗 This is a test {test_arg1}🔗
+🔗'''""", """\
+    FSTRING_START "f\'\'\'"        (1, 0) (1, 4)
+    FSTRING_MIDDLE '\\n    🔗 This is a test ' (1, 4) (2, 21)
+    OP         '{'           (2, 21) (2, 22)
+    NAME       'test_arg1'   (2, 22) (2, 31)
+    OP         '}'           (2, 31) (2, 32)
+    FSTRING_MIDDLE '🔗\\n🔗'        (2, 32) (3, 1)
+    FSTRING_END "\'\'\'"         (3, 1) (3, 4)
+    """)
+
 class GenerateTokensTest(TokenizeTest):
     def check_tokenize(self, s, expected):
         # Format the tokens in s in a table format.
@@ -1791,6 +1816,22 @@ class UntokenizeTest(TestCase):
         self.assertEqual(untokenize(iter(tokens)), b'Hello ')
 
 
+def contains_ambiguous_backslash(source):
+    """Return `True` if the source contains a backslash on a
+    line by itself. For example:
+
+    a = (1
+        \\
+    )
+
+    Code like this cannot be untokenized exactly. This is because
+    the tokenizer does not produce any tokens for the line containing
+    the backslash and so there is no way to know its indent.
+    """
+    pattern = re.compile(br'\n\s*\\\r?\n')
+    return pattern.search(source) is not None
+
+
 class TestRoundtrip(TestCase):
 
     def check_roundtrip(self, f):
@@ -1800,6 +1841,9 @@ class TestRoundtrip(TestCase):
         Both sequences are converted back to source code via
         tokenize.untokenize(), and the latter tokenized again to 2-tuples.
         The test fails if the 3 pair tokenizations do not match.
+
+        If the source code can be untokenized unambiguously, the
+        untokenized code must match the original code exactly.
 
         When untokenize bugs are fixed, untokenize with 5-tuples should
         reproduce code that does not contain a backslash continuation
@@ -1823,6 +1867,13 @@ class TestRoundtrip(TestCase):
         readline5 = iter(bytes_from5.splitlines(keepends=True)).__next__
         tokens2_from5 = [tok[:2] for tok in tokenize(readline5)]
         self.assertEqual(tokens2_from5, tokens2)
+
+        if not contains_ambiguous_backslash(code):
+            # The BOM does not produce a token so there is no way to preserve it.
+            code_without_bom = code.removeprefix(b'\xef\xbb\xbf')
+            readline = iter(code_without_bom.splitlines(keepends=True)).__next__
+            untokenized_code = untokenize(tokenize(readline))
+            self.assertEqual(code_without_bom, untokenized_code)
 
     def check_line_extraction(self, f):
         if isinstance(f, str):
@@ -1891,6 +1942,26 @@ class TestRoundtrip(TestCase):
         self.check_roundtrip(r"f'\\\\N{{'")
         self.check_roundtrip(r"f'\\\\\\N{{'")
         self.check_roundtrip(r"f'\\\\\\\\N{{'")
+
+        self.check_roundtrip(r"f'\n{{foo}}'")
+        self.check_roundtrip(r"f'\\n{{foo}}'")
+        self.check_roundtrip(r"f'\\\n{{foo}}'")
+        self.check_roundtrip(r"f'\\\\n{{foo}}'")
+
+        self.check_roundtrip(r"f'\t{{foo}}'")
+        self.check_roundtrip(r"f'\\t{{foo}}'")
+        self.check_roundtrip(r"f'\\\t{{foo}}'")
+        self.check_roundtrip(r"f'\\\\t{{foo}}'")
+
+        self.check_roundtrip(r"rf'\t{{foo}}'")
+        self.check_roundtrip(r"rf'\\t{{foo}}'")
+        self.check_roundtrip(r"rf'\\\t{{foo}}'")
+        self.check_roundtrip(r"rf'\\\\t{{foo}}'")
+
+        self.check_roundtrip(r"rf'\{{foo}}'")
+        self.check_roundtrip(r"f'\\{{foo}}'")
+        self.check_roundtrip(r"rf'\\\{{foo}}'")
+        self.check_roundtrip(r"f'\\\\{{foo}}'")
         cases = [
     """
 if 1:

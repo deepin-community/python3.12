@@ -124,7 +124,7 @@ Module contents
    - *unsafe_hash*: If ``False`` (the default), a :meth:`~object.__hash__` method
      is generated according to how *eq* and *frozen* are set.
 
-     :meth:`!__hash__` is used by built-in :meth:`hash()`, and when objects are
+     :meth:`!__hash__` is used by built-in :meth:`hash`, and when objects are
      added to hashed collections such as dictionaries and sets.  Having a
      :meth:`!__hash__` implies that instances of the class are immutable.
      Mutability is a complicated property that depends on the programmer's
@@ -164,7 +164,7 @@ Module contents
 
    - *match_args*: If true (the default is ``True``), the
      :attr:`~object.__match_args__` tuple will be created from the list of
-     parameters to the generated :meth:`~object.__init__` method (even if
+     non keyword-only parameters to the generated :meth:`~object.__init__` method (even if
      :meth:`!__init__` is not generated, see above).  If false, or if
      :attr:`!__match_args__` is already defined in the class, then
      :attr:`!__match_args__` will not be generated.
@@ -175,20 +175,32 @@ Module contents
      fields will be marked as keyword-only.  If a field is marked as
      keyword-only, then the only effect is that the :meth:`~object.__init__`
      parameter generated from a keyword-only field must be specified
-     with a keyword when :meth:`!__init__` is called.  There is no
-     effect on any other aspect of dataclasses.  See the
-     :term:`parameter` glossary entry for details.  Also see the
+     with a keyword when :meth:`!__init__` is called. See the :term:`parameter`
+     glossary entry for details.  Also see the
      :const:`KW_ONLY` section.
+
+     Keyword-only fields are not included in :attr:`!__match_args__`.
 
     .. versionadded:: 3.10
 
    - *slots*: If true (the default is ``False``), :attr:`~object.__slots__` attribute
      will be generated and new class will be returned instead of the original one.
      If :attr:`!__slots__` is already defined in the class, then :exc:`TypeError`
-     is raised. Calling no-arg :func:`super` in dataclasses using ``slots=True`` will result in
-     the following exception being raised:
-     ``TypeError: super(type, obj): obj must be an instance or subtype of type``.
-     The two-arg :func:`super` is a valid workaround. See :gh:`90562` for full details.
+     is raised.
+
+    .. warning::
+        Calling no-arg :func:`super` in dataclasses using ``slots=True``
+        will result in the following exception being raised:
+        ``TypeError: super(type, obj): obj must be an instance or subtype of type``.
+        The two-arg :func:`super` is a valid workaround.
+        See :gh:`90562` for full details.
+
+    .. warning::
+       Passing parameters to a base class :meth:`~object.__init_subclass__`
+       when using ``slots=True`` will result in a :exc:`TypeError`.
+       Either use ``__init_subclass__`` with no parameters
+       or use default values as a workaround.
+       See :gh:`91126` for full details.
 
     .. versionadded:: 3.10
 
@@ -204,7 +216,8 @@ Module contents
 
    - *weakref_slot*: If true (the default is ``False``), add a slot
      named "__weakref__", which is required to make an instance
-     weakref-able.  It is an error to specify ``weakref_slot=True``
+     :func:`weakref-able <weakref.ref>`.
+     It is an error to specify ``weakref_slot=True``
      without also specifying ``slots=True``.
 
     .. versionadded:: 3.11
@@ -265,10 +278,11 @@ Module contents
      string returned by the generated :meth:`~object.__repr__` method.
 
    - *hash*: This can be a bool or ``None``.  If true, this field is
-     included in the generated :meth:`~object.__hash__` method.  If ``None`` (the
-     default), use the value of *compare*: this would normally be
-     the expected behavior.  A field should be considered in the hash
-     if it's used for comparisons.  Setting this value to anything
+     included in the generated :meth:`~object.__hash__` method.  If false,
+     this field is excluded from the generated :meth:`~object.__hash__`.
+     If ``None`` (the default), use the value of *compare*: this would
+     normally be the expected behavior, since a field should be included
+     in the hash if it's used for comparisons.  Setting this value to anything
      other than ``None`` is discouraged.
 
      One possible reason to set ``hash=False`` but ``compare=True``
@@ -292,6 +306,8 @@ Module contents
    - *kw_only*: If true, this field will be marked as keyword-only.
      This is used when the generated :meth:`~object.__init__` method's
      parameters are computed.
+
+     Keyword-only fields are also not included in :attr:`!__match_args__`.
 
     .. versionadded:: 3.10
 

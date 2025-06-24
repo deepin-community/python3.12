@@ -329,7 +329,7 @@ loops that truncate the stream.
               yield n
               n += step
 
-   When counting with floating point numbers, better accuracy can sometimes be
+   When counting with floating-point numbers, better accuracy can sometimes be
    achieved by substituting multiplicative code such as: ``(start + step * i
    for i in count())``.
 
@@ -664,7 +664,7 @@ loops that truncate the stream.
    consumed from the input iterator and there is no way to access it.
    This could be an issue if an application wants to further consume the
    input iterator after *takewhile* has been run to exhaustion.  To work
-   around this problem, consider using `more-iterools before_and_after()
+   around this problem, consider using `more-itertools before_and_after()
    <https://more-itertools.readthedocs.io/en/stable/api.html#more_itertools.before_and_after>`_
    instead.
 
@@ -676,24 +676,37 @@ loops that truncate the stream.
    Roughly equivalent to::
 
         def tee(iterable, n=2):
-            iterator = iter(iterable)
-            shared_link = [None, None]
-            return tuple(_tee(iterator, shared_link) for _ in range(n))
+            if n < 0:
+                raise ValueError
+            if n == 0:
+                return ()
+            iterator = _tee(iterable)
+            result = [iterator]
+            for _ in range(n - 1):
+                result.append(_tee(iterator))
+            return tuple(result)
 
-        def _tee(iterator, link):
-            try:
-                while True:
-                    if link[1] is None:
-                        link[0] = next(iterator)
-                        link[1] = [None, None]
-                    value, link = link
-                    yield value
-            except StopIteration:
-                return
+        class _tee:
 
-   Once a :func:`tee` has been created, the original *iterable* should not be
-   used anywhere else; otherwise, the *iterable* could get advanced without
-   the tee objects being informed.
+            def __init__(self, iterable):
+                it = iter(iterable)
+                if isinstance(it, _tee):
+                    self.iterator = it.iterator
+                    self.link = it.link
+                else:
+                    self.iterator = it
+                    self.link = [None, None]
+
+            def __iter__(self):
+                return self
+
+            def __next__(self):
+                link = self.link
+                if link[1] is None:
+                    link[0] = next(self.iterator)
+                    link[1] = [None, None]
+                value, self.link = link
+                return value
 
    ``tee`` iterators are not threadsafe. A :exc:`RuntimeError` may be
    raised when simultaneously using iterators returned by the same :func:`tee`
@@ -815,6 +828,11 @@ and :term:`generators <generator>` which incur interpreter overhead.
    def ncycles(iterable, n):
        "Returns the sequence elements n times."
        return chain.from_iterable(repeat(tuple(iterable), n))
+
+   def loops(n):
+       "Loop n times. Like range(n) but without creating integers."
+       # for _ in loops(100): ...
+       return repeat(None, n)
 
    def tail(n, iterable):
        "Return an iterator over the last n items."
@@ -1047,6 +1065,11 @@ The following recipes have a more mathematical flavor:
            data[p*p : n : p+p] = bytes(len(range(p*p, n, p+p)))
        yield from iter_index(data, 1, start=3)
 
+   def is_prime(n):
+       "Return True if n is prime."
+       # is_prime(1_000_000_000_000_403) → True
+       return n > 1 and all(n % p for p in sieve(math.isqrt(n) + 1))
+
    def factor(n):
        "Prime factors of n."
        # factor(99) → 3 3 11
@@ -1068,6 +1091,12 @@ The following recipes have a more mathematical flavor:
        for prime in set(factor(n)):
            n -= n // prime
        return n
+
+   def multinomial(*counts):
+       "Number of distinct arrangements of a multiset."
+       # Counter('abracadabra').values() -> 5 2 1 1 2
+       # multinomial(5, 2, 1, 1, 2) → 83160
+       return math.prod(map(math.comb, accumulate(counts), counts))
 
 
 .. doctest::
@@ -1145,6 +1174,17 @@ The following recipes have a more mathematical flavor:
 
     >>> list(islice(tabulate(lambda x: 2*x), 4))
     [0, 2, 4, 6]
+
+
+    >>> for _ in loops(5):
+    ...     print('hi')
+    ...
+    hi
+    hi
+    hi
+    hi
+    hi
+
 
     >>> list(tail(3, 'ABCDEFG'))
     ['E', 'F', 'G']
@@ -1405,6 +1445,24 @@ The following recipes have a more mathematical flavor:
     >>> set(sieve(10_000)).isdisjoint(carmichael)
     True
 
+
+    >>> small_primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
+    >>> list(filter(is_prime, range(-100, 100))) == small_primes
+    True
+    >>> carmichael = {561, 1105, 1729, 2465, 2821, 6601, 8911}  # https://oeis.org/A002997
+    >>> any(map(is_prime, carmichael))
+    False
+    >>> # https://www.wolframalpha.com/input?i=is+128884753939+prime
+    >>> is_prime(128_884_753_939)           # large prime
+    True
+    >>> is_prime(999953 * 999983)           # large semiprime
+    False
+    >>> is_prime(1_000_000_000_000_007)     # factor() example
+    False
+    >>> is_prime(1_000_000_000_000_403)     # factor() example
+    True
+
+
     >>> list(factor(99))                    # Code example 1
     [3, 3, 11]
     >>> list(factor(1_000_000_000_000_007)) # Code example 2
@@ -1630,6 +1688,12 @@ The following recipes have a more mathematical flavor:
     '0'
     >>> ''.join(it)
     'DEF1'
+
+    >>> multinomial(5, 2, 1, 1, 2)
+    83160
+    >>> word = 'coffee'
+    >>> multinomial(*collections.Counter(word).values()) == len(set(permutations(word)))
+    True
 
 
 .. testcode::

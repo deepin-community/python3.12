@@ -388,9 +388,16 @@ Initializing and finalizing the interpreter
    :c:func:`Py_NewInterpreter` below) that were created and not yet destroyed since
    the last call to :c:func:`Py_Initialize`.  Ideally, this frees all memory
    allocated by the Python interpreter.  This is a no-op when called for a second
-   time (without calling :c:func:`Py_Initialize` again first).  Normally the
-   return value is ``0``.  If there were errors during finalization
-   (flushing buffered data), ``-1`` is returned.
+   time (without calling :c:func:`Py_Initialize` again first).
+
+   Since this is the reverse of :c:func:`Py_Initialize`, it should be called
+   in the same thread with the same interpreter active.  That means
+   the main thread and the main interpreter.
+   This should never be called while :c:func:`Py_RunMain` is running.
+
+   Normally the return value is ``0``.
+   If there were errors during finalization (flushing buffered data),
+   ``-1`` is returned.
 
    This function is provided for a number of reasons.  An embedding application
    might want to restart Python without having to restart the application itself.
@@ -485,7 +492,7 @@ Process-wide parameters
    interpreter will change the contents of this storage.
 
    Use :c:func:`Py_DecodeLocale` to decode a bytes string to get a
-   :c:expr:`wchar_t *` string.
+   :c:expr:`wchar_t*` string.
 
    .. deprecated:: 3.11
 
@@ -751,7 +758,7 @@ Process-wide parameters
      directory (``"."``).
 
    Use :c:func:`Py_DecodeLocale` to decode a bytes string to get a
-   :c:expr:`wchar_*` string.
+   :c:expr:`wchar_t*` string.
 
    See also :c:member:`PyConfig.orig_argv` and :c:member:`PyConfig.argv`
    members of the :ref:`Python Initialization Configuration <init-config>`.
@@ -787,7 +794,7 @@ Process-wide parameters
    :option:`-I`.
 
    Use :c:func:`Py_DecodeLocale` to decode a bytes string to get a
-   :c:expr:`wchar_*` string.
+   :c:expr:`wchar_t*` string.
 
    See also :c:member:`PyConfig.orig_argv` and :c:member:`PyConfig.argv`
    members of the :ref:`Python Initialization Configuration <init-config>`.
@@ -813,7 +820,7 @@ Process-wide parameters
    this storage.
 
    Use :c:func:`Py_DecodeLocale` to decode a bytes string to get a
-   :c:expr:`wchar_*` string.
+   :c:expr:`wchar_t*` string.
 
    .. deprecated:: 3.11
 
@@ -1262,7 +1269,7 @@ All of the following functions must be called after :c:func:`Py_Initialize`.
 .. c:function:: void PyThreadState_DeleteCurrent(void)
 
    Destroy the current thread state and release the global interpreter lock.
-   Like :c:func:`PyThreadState_Delete`, the global interpreter lock need not
+   Like :c:func:`PyThreadState_Delete`, the global interpreter lock must
    be held. The thread state must have been reset with a previous call
    to :c:func:`PyThreadState_Clear`.
 
@@ -1637,7 +1644,11 @@ function. You can create and destroy them using the following functions:
           .check_multi_interp_extensions = 1,
           .gil = PyInterpreterConfig_OWN_GIL,
       };
-      PyThreadState *tstate = Py_NewInterpreterFromConfig(&config);
+      PyThreadState *tstate = NULL;
+      PyStatus status = Py_NewInterpreterFromConfig(&tstate, &config);
+      if (PyStatus_Exception(status)) {
+          Py_ExitStatusException(status);
+      }
 
    Note that the config is used only briefly and does not get modified.
    During initialization the config's values are converted into various

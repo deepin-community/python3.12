@@ -14,8 +14,8 @@ Features required to build CPython:
   <https://en.wikipedia.org/wiki/C11_(C_standard_revision)#Optional_features>`_
   are not required.
 
-* Support for `IEEE 754 <https://en.wikipedia.org/wiki/IEEE_754>`_ floating
-  point numbers and `floating point Not-a-Number (NaN)
+* Support for `IEEE 754 <https://en.wikipedia.org/wiki/IEEE_754>`_
+  floating-point numbers and `floating-point Not-a-Number (NaN)
   <https://en.wikipedia.org/wiki/NaN#Floating_point>`_.
 
 * Support for threads.
@@ -459,7 +459,7 @@ Debug options
    Effects:
 
    * Define the ``Py_TRACE_REFS`` macro.
-   * Add :func:`!sys.getobjects` function.
+   * Add :func:`sys.getobjects` function.
    * Add :envvar:`PYTHONDUMPREFS` environment variable.
 
    This build is not ABI compatible with release build (default build) or debug
@@ -659,14 +659,20 @@ See ``Mac/README.rst``.
 
    Options:
 
-   * ``universal2``;
-   * ``32-bit``;
-   * ``64-bit``;
-   * ``3-way``;
-   * ``intel``;
-   * ``intel-32``;
-   * ``intel-64``;
-   * ``all``.
+   * ``universal2`` (x86-64 and arm64);
+   * ``32-bit`` (PPC and i386);
+   * ``64-bit``  (PPC64 and x86-64);
+   * ``3-way`` (i386, PPC and x86-64);
+   * ``intel`` (i386 and x86-64);
+   * ``intel-32`` (i386);
+   * ``intel-64`` (x86-64);
+   * ``all``  (PPC, i386, PPC64 and x86-64).
+
+   Note that values for this configuration item are *not* the same as the
+   identifiers used for universal binary wheels on macOS. See the Python
+   Packaging User Guide for details on the `packaging platform compatibility
+   tags used on macOS
+   <https://packaging.python.org/en/latest/specifications/platform-compatibility-tags/#macos>`_
 
 .. option:: --with-framework-name=FRAMEWORK
 

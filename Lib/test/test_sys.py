@@ -1,6 +1,7 @@
 import builtins
 import codecs
 import gc
+import io
 import locale
 import operator
 import os
@@ -78,6 +79,18 @@ class DisplayHookTest(unittest.TestCase):
         with support.swap_attr(sys, 'displayhook', baddisplayhook):
             code = compile("42", "<string>", "single")
             self.assertRaises(ValueError, eval, code)
+
+    def test_gh130163(self):
+        class X:
+            def __repr__(self):
+                sys.stdout = io.StringIO()
+                support.gc_collect()
+                return 'foo'
+
+        with support.swap_attr(sys, 'stdout', None):
+            sys.stdout = io.StringIO()  # the only reference
+            sys.displayhook(X())  # should not crash
+
 
 class ActiveExceptionTests(unittest.TestCase):
     def test_exc_info_no_exception(self):
@@ -710,8 +723,11 @@ class SysModuleTest(unittest.TestCase):
 
         self.assertRaises(TypeError, sys.intern, S("abc"))
 
+    @support.cpython_only
     @requires_subinterpreters
     def test_subinterp_intern_dynamically_allocated(self):
+        # Implementation detail: Dynamically allocated strings
+        # are distinct between interpreters
         s = "never interned before" + str(random.randrange(0, 10**9))
         t = sys.intern(s)
         self.assertIs(t, s)
@@ -719,25 +735,58 @@ class SysModuleTest(unittest.TestCase):
         interp = interpreters.create()
         interp.run(textwrap.dedent(f'''
             import sys
-            t = sys.intern({s!r})
+
+            # set `s`, avoid parser interning & constant folding
+            s = str({s.encode()!r}, 'utf-8')
+
+            t = sys.intern(s)
+
             assert id(t) != {id(s)}, (id(t), {id(s)})
             assert id(t) != {id(t)}, (id(t), {id(t)})
             '''))
 
+    @support.cpython_only
     @requires_subinterpreters
     def test_subinterp_intern_statically_allocated(self):
+        # Implementation detail: Statically allocated strings are shared
+        # between interpreters.
         # See Tools/build/generate_global_objects.py for the list
         # of strings that are always statically allocated.
-        s = '__init__'
-        t = sys.intern(s)
+        for s in ('__init__', 'CANCELLED', '<module>', 'utf-8',
+                  '{{', '', '\n', '_', 'x', '\0', '\N{CEDILLA}', '\xff',
+                  ):
+            with self.subTest(s=s):
+                t = sys.intern(s)
 
-        print('------------------------')
-        interp = interpreters.create()
-        interp.run(textwrap.dedent(f'''
-            import sys
-            t = sys.intern({s!r})
-            assert id(t) == {id(t)}, (id(t), {id(t)})
-            '''))
+                interp = interpreters.create()
+                interp.run(textwrap.dedent(f'''
+                    import sys
+
+                    # set `s`, avoid parser interning & constant folding
+                    s = str({s.encode()!r}, 'utf-8')
+
+                    t = sys.intern(s)
+                    assert id(t) == {id(t)}, (id(t), {id(t)})
+                    '''))
+
+    @support.cpython_only
+    @requires_subinterpreters
+    def test_subinterp_intern_singleton(self):
+        # Implementation detail: singletons are used for 0- and 1-character
+        # latin1 strings.
+        for s in '', '\n', '_', 'x', '\0', '\N{CEDILLA}', '\xff':
+            with self.subTest(s=s):
+                interp = interpreters.create()
+                interp.run(textwrap.dedent(f'''
+                    import sys
+
+                    # set `s`, avoid parser interning & constant folding
+                    s = str({s.encode()!r}, 'utf-8')
+
+                    assert id(s) == {id(s)}
+                    t = sys.intern(s)
+                    assert id(t) == id(s), (id(t), id(s))
+                    '''))
 
     def test_sys_flags(self):
         self.assertTrue(sys.flags)

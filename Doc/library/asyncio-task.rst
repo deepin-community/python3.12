@@ -158,7 +158,7 @@ other coroutines::
         # Nothing happens if we just call "nested()".
         # A coroutine object is created but not awaited,
         # so it *won't run at all*.
-        nested()
+        nested()  # will raise a "RuntimeWarning".
 
         # Let's do it differently now and await it:
         print(await nested())  # will print "42".
@@ -386,10 +386,58 @@ The same special case is made for
 :exc:`KeyboardInterrupt` and :exc:`SystemExit` as in the previous paragraph.
 
 
+Terminating a Task Group
+------------------------
+
+While terminating a task group is not natively supported by the standard
+library, termination can be achieved by adding an exception-raising task
+to the task group and ignoring the raised exception:
+
+.. code-block:: python
+
+   import asyncio
+   from asyncio import TaskGroup
+
+   class TerminateTaskGroup(Exception):
+       """Exception raised to terminate a task group."""
+
+   async def force_terminate_task_group():
+       """Used to force termination of a task group."""
+       raise TerminateTaskGroup()
+
+   async def job(task_id, sleep_time):
+       print(f'Task {task_id}: start')
+       await asyncio.sleep(sleep_time)
+       print(f'Task {task_id}: done')
+
+   async def main():
+       try:
+           async with TaskGroup() as group:
+               # spawn some tasks
+               group.create_task(job(1, 0.5))
+               group.create_task(job(2, 1.5))
+               # sleep for 1 second
+               await asyncio.sleep(1)
+               # add an exception-raising task to force the group to terminate
+               group.create_task(force_terminate_task_group())
+       except* TerminateTaskGroup:
+           pass
+
+   asyncio.run(main())
+
+Expected output:
+
+.. code-block:: text
+
+   Task 1: start
+   Task 2: start
+   Task 1: done
+
 Sleeping
 ========
 
-.. coroutinefunction:: sleep(delay, result=None)
+.. function:: sleep(delay, result=None)
+   :async:
 
    Block for *delay* seconds.
 
@@ -741,7 +789,8 @@ Timeouts
 
    .. versionadded:: 3.11
 
-.. coroutinefunction:: wait_for(aw, timeout)
+.. function:: wait_for(aw, timeout)
+   :async:
 
    Wait for the *aw* :ref:`awaitable <asyncio-awaitables>`
    to complete with a timeout.
@@ -801,7 +850,8 @@ Timeouts
 Waiting Primitives
 ==================
 
-.. coroutinefunction:: wait(aws, *, timeout=None, return_when=ALL_COMPLETED)
+.. function:: wait(aws, *, timeout=None, return_when=ALL_COMPLETED)
+   :async:
 
    Run :class:`~asyncio.Future` and :class:`~asyncio.Task` instances in the *aws*
    iterable concurrently and block until the condition specified
@@ -885,7 +935,8 @@ Waiting Primitives
 Running in Threads
 ==================
 
-.. coroutinefunction:: to_thread(func, /, *args, **kwargs)
+.. function:: to_thread(func, /, *args, **kwargs)
+   :async:
 
    Asynchronously run function *func* in a separate thread.
 
@@ -1104,7 +1155,7 @@ Task Object
       a :exc:`CancelledError` exception.
 
       If the Task's result isn't yet available, this method raises
-      a :exc:`InvalidStateError` exception.
+      an :exc:`InvalidStateError` exception.
 
    .. method:: exception()
 

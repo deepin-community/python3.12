@@ -1242,7 +1242,7 @@ class FormatTest:
         self.assertEqual(get_fmt(Decimal('-1.5'), dotsep_wide, '020n'),
                          '-0\u00b4000\u00b4000\u00b4000\u00b4001\u00bf5')
 
-    @run_with_locale('LC_ALL', 'ps_AF')
+    @run_with_locale('LC_ALL', 'ps_AF', '')
     def test_wide_char_separator_decimal_point(self):
         # locale with wide char separator and decimal point
         Decimal = self.decimal.Decimal
@@ -2060,7 +2060,9 @@ class UsabilityTest:
         #to quantize, which is already extensively tested
         test_triples = [
             ('123.456', -4, '0E+4'),
+            ('-123.456', -4, '-0E+4'),
             ('123.456', -3, '0E+3'),
+            ('-123.456', -3, '-0E+3'),
             ('123.456', -2, '1E+2'),
             ('123.456', -1, '1.2E+2'),
             ('123.456', 0, '123'),
@@ -4461,6 +4463,15 @@ class Coverage:
             self.assertIs(Decimal("NaN").fma(7, 1).is_nan(), True)
             # three arg power
             self.assertEqual(pow(Decimal(10), 2, 7), 2)
+            if self.decimal == C:
+                self.assertEqual(pow(10, Decimal(2), 7), 2)
+                self.assertEqual(pow(10, 2, Decimal(7)), 2)
+            else:
+                # XXX: Three-arg power doesn't use __rpow__.
+                self.assertRaises(TypeError, pow, 10, Decimal(2), 7)
+                # XXX: There is no special method to dispatch on the
+                # third arg of three-arg power.
+                self.assertRaises(TypeError, pow, 10, 2, Decimal(7))
             # exp
             self.assertEqual(Decimal("1.01").exp(), 3)
             # is_normal
