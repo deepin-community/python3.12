@@ -1571,7 +1571,8 @@ Test cases
 
    .. versionadded:: 3.8
 
-   .. coroutinemethod:: asyncSetUp()
+   .. method:: asyncSetUp()
+      :async:
 
       Method called to prepare the test fixture. This is called after :meth:`setUp`.
       This is called immediately before calling the test method; other than
@@ -1579,7 +1580,8 @@ Test cases
       will be considered an error rather than a test failure. The default implementation
       does nothing.
 
-   .. coroutinemethod:: asyncTearDown()
+   .. method:: asyncTearDown()
+      :async:
 
       Method called immediately after the test method has been called and the
       result recorded.  This is called before :meth:`tearDown`. This is called even if
@@ -1595,7 +1597,8 @@ Test cases
 
       This method accepts a coroutine that can be used as a cleanup function.
 
-   .. coroutinemethod:: enterAsyncContext(cm)
+   .. method:: enterAsyncContext(cm)
+      :async:
 
       Enter the supplied :term:`asynchronous context manager`.  If successful,
       also add its :meth:`~object.__aexit__` method as a cleanup function by
@@ -2308,8 +2311,8 @@ Loading and running tests
    (see :ref:`Warning control <using-on-warnings>`),
    otherwise it will be set to ``'default'``.
 
-   Calling ``main`` actually returns an instance of the ``TestProgram`` class.
-   This stores the result of the tests run as the ``result`` attribute.
+   Calling ``main`` returns an object with the ``result`` attribute that contains
+   the result of the tests run as a :class:`unittest.TestResult`.
 
    .. versionchanged:: 3.1
       The *exit* parameter was added.
@@ -2521,7 +2524,7 @@ Signal Handling
 .. versionadded:: 3.2
 
 The :option:`-c/--catch <unittest -c>` command-line option to unittest,
-along with the ``catchbreak`` parameter to :func:`unittest.main()`, provide
+along with the ``catchbreak`` parameter to :func:`unittest.main`, provide
 more friendly handling of control-C during a test run. With catch break
 behavior enabled control-C will allow the currently running test to complete,
 and the test run will then end and report all the results so far. A second

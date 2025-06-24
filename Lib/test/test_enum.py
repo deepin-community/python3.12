@@ -422,6 +422,7 @@ class _EnumTests:
             self.assertEqual(str(TE), "<flag 'MainEnum'>")
             self.assertEqual(format(TE), "<flag 'MainEnum'>")
             self.assertTrue(TE(5) is self.dupe2)
+            self.assertTrue(7 in TE)
         else:
             self.assertEqual(repr(TE), "<enum 'MainEnum'>")
             self.assertEqual(str(TE), "<enum 'MainEnum'>")
@@ -1455,6 +1456,27 @@ class TestSpecial(unittest.TestCase):
             spam = nonmember(SpamEnumIsInner)
         self.assertTrue(SpamEnum.spam is SpamEnumIsInner)
 
+    def test_using_members_as_nonmember(self):
+        class Example(Flag):
+            A = 1
+            B = 2
+            ALL = nonmember(A | B)
+
+        self.assertEqual(Example.A.value, 1)
+        self.assertEqual(Example.B.value, 2)
+        self.assertEqual(Example.ALL, 3)
+        self.assertIs(type(Example.ALL), int)
+
+        class Example(Flag):
+            A = auto()
+            B = auto()
+            ALL = nonmember(A | B)
+
+        self.assertEqual(Example.A.value, 1)
+        self.assertEqual(Example.B.value, 2)
+        self.assertEqual(Example.ALL, 3)
+        self.assertIs(type(Example.ALL), int)
+
     def test_nested_classes_in_enum_with_member(self):
         """Support locally-defined nested classes."""
         class Outer(Enum):
@@ -1830,6 +1852,25 @@ class TestSpecial(unittest.TestCase):
         with self.assertRaises(TypeError):
             class Wrong(Enum, str):
                 NotHere = 'error before this point'
+
+    def test_raise_custom_error_on_creation(self):
+        class InvalidRgbColorError(ValueError):
+            def __init__(self, r, g, b):
+                self.r = r
+                self.g = g
+                self.b = b
+                super().__init__(f'({r}, {g}, {b}) is not a valid RGB color')
+
+        with self.assertRaises(InvalidRgbColorError):
+            class RgbColor(Enum):
+                RED = (255, 0, 0)
+                GREEN = (0, 255, 0)
+                BLUE = (0, 0, 255)
+                INVALID = (256, 0, 0)
+
+                def __init__(self, r, g, b):
+                    if not all(0 <= val <= 255 for val in (r, g, b)):
+                        raise InvalidRgbColorError(r, g, b)
 
     def test_intenum_transitivity(self):
         class number(IntEnum):
@@ -4808,6 +4849,7 @@ class Color(enum.Enum)
  |      `value` is in `cls` if:
  |      1) `value` is a member of `cls`, or
  |      2) `value` is the value of one of the `cls`'s members.
+ |      3) `value` is a pseudo-member (flags)
  |
  |  __getitem__(name)
  |      Return the member matching `name`.
@@ -5136,7 +5178,7 @@ class TestConvert(unittest.TestCase):
                 filter=lambda x: x.startswith('CONVERT_TEST_'))
         # We don't want the reverse lookup value to vary when there are
         # multiple possible names for a given value.  It should always
-        # report the first lexigraphical name in that case.
+        # report the first lexicographical name in that case.
         self.assertEqual(test_type(5).name, 'CONVERT_TEST_NAME_A')
 
     def test_convert_int(self):

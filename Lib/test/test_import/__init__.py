@@ -787,6 +787,19 @@ class ImportTests(unittest.TestCase):
         self.assertIn("Frozen object named 'x' is invalid",
                       str(cm.exception))
 
+    def test_create_dynamic_null(self):
+        with self.assertRaisesRegex(ValueError, 'embedded null character'):
+            class Spec:
+                name = "a\x00b"
+                origin = "abc"
+            _imp.create_dynamic(Spec())
+
+        with self.assertRaisesRegex(ValueError, 'embedded null character'):
+            class Spec2:
+                name = "abc"
+                origin = "a\x00b"
+            _imp.create_dynamic(Spec2())
+
 
 @skip_if_dont_write_bytecode
 class FilePermissionTests(unittest.TestCase):
@@ -1887,6 +1900,7 @@ class SubinterpImportTests(unittest.TestCase):
 
     @unittest.skipIf(_testmultiphase is None, "test requires _testmultiphase module")
     def test_multi_init_extension_compat(self):
+        # Module with Py_MOD_PER_INTERPRETER_GIL_SUPPORTED
         module = '_testmultiphase'
         require_extension(module)
         with self.subTest(f'{module}: not strict'):
@@ -1898,6 +1912,8 @@ class SubinterpImportTests(unittest.TestCase):
 
     @unittest.skipIf(_testmultiphase is None, "test requires _testmultiphase module")
     def test_multi_init_extension_non_isolated_compat(self):
+        # Module with Py_MOD_MULTIPLE_INTERPRETERS_NOT_SUPPORTED
+        # and Py_MOD_GIL_NOT_USED
         modname = '_test_non_isolated'
         filename = _testmultiphase.__file__
         loader = ExtensionFileLoader(modname, filename)
@@ -1916,23 +1932,33 @@ class SubinterpImportTests(unittest.TestCase):
 
     @unittest.skipIf(_testmultiphase is None, "test requires _testmultiphase module")
     def test_multi_init_extension_per_interpreter_gil_compat(self):
-        modname = '_test_shared_gil_only'
-        filename = _testmultiphase.__file__
-        loader = ExtensionFileLoader(modname, filename)
-        spec = importlib.util.spec_from_loader(modname, loader)
-        module = importlib.util.module_from_spec(spec)
-        loader.exec_module(module)
-        sys.modules[modname] = module
+        # _test_shared_gil_only:
+        #   Explicit Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED (default)
+        #   and Py_MOD_GIL_NOT_USED
+        # _test_no_multiple_interpreter_slot:
+        #   No Py_mod_multiple_interpreters slot
+        #   and Py_MOD_GIL_NOT_USED
+        for modname in ('_test_shared_gil_only',
+                        '_test_no_multiple_interpreter_slot'):
+            with self.subTest(modname=modname):
 
-        require_extension(module)
-        with self.subTest(f'{modname}: isolated, strict'):
-            self.check_incompatible_here(modname, filename, isolated=True)
-        with self.subTest(f'{modname}: not isolated, strict'):
-            self.check_compatible_here(modname, filename,
-                                       strict=True, isolated=False)
-        with self.subTest(f'{modname}: not isolated, not strict'):
-            self.check_compatible_here(modname, filename,
-                                       strict=False, isolated=False)
+                filename = _testmultiphase.__file__
+                loader = ExtensionFileLoader(modname, filename)
+                spec = importlib.util.spec_from_loader(modname, loader)
+                module = importlib.util.module_from_spec(spec)
+                loader.exec_module(module)
+                sys.modules[modname] = module
+
+                require_extension(module)
+                with self.subTest(f'{modname}: isolated, strict'):
+                    self.check_incompatible_here(modname, filename,
+                                                 isolated=True)
+                with self.subTest(f'{modname}: not isolated, strict'):
+                    self.check_compatible_here(modname, filename,
+                                               strict=True, isolated=False)
+                with self.subTest(f'{modname}: not isolated, not strict'):
+                    self.check_compatible_here(
+                        modname, filename, strict=False, isolated=False)
 
     def test_python_compat(self):
         module = 'threading'

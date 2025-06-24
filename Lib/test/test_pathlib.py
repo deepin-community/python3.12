@@ -831,6 +831,14 @@ class PureWindowsPathTest(_BasePurePathTest, unittest.TestCase):
             ],
     })
 
+    def test_constructor_nested_foreign_flavour(self):
+        # See GH-125069.
+        p1 = pathlib.PurePosixPath('b/c:\\d')
+        p2 = pathlib.PurePosixPath('b/', 'c:\\d')
+        self.assertEqual(p1, p2)
+        self.assertEqual(self.cls(p1), self.cls('b/c:/d'))
+        self.assertEqual(self.cls(p2), self.cls('b/c:/d'))
+
     def test_drive_root_parts(self):
         check = self._check_drive_root_parts
         # First part is anchored.
@@ -3103,7 +3111,7 @@ class PosixPathTest(_BasePathTest, unittest.TestCase):
         p7 = P(f'~{fakename}/Documents')
 
         with os_helper.EnvironmentVarGuard() as env:
-            env.pop('HOME', None)
+            env.unset('HOME')
 
             self.assertEqual(p1.expanduser(), P(userhome) / 'Documents')
             self.assertEqual(p2.expanduser(), P(userhome) / 'Documents')
@@ -3214,10 +3222,7 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
     def test_expanduser(self):
         P = self.cls
         with os_helper.EnvironmentVarGuard() as env:
-            env.pop('HOME', None)
-            env.pop('USERPROFILE', None)
-            env.pop('HOMEPATH', None)
-            env.pop('HOMEDRIVE', None)
+            env.unset('HOME', 'USERPROFILE', 'HOMEPATH', 'HOMEDRIVE')
             env['USERNAME'] = 'alice'
 
             # test that the path returns unchanged
@@ -3255,8 +3260,7 @@ class WindowsPathTest(_BasePathTest, unittest.TestCase):
             env['HOMEPATH'] = 'Users\\alice'
             check()
 
-            env.pop('HOMEDRIVE', None)
-            env.pop('HOMEPATH', None)
+            env.unset('HOMEDRIVE', 'HOMEPATH')
             env['USERPROFILE'] = 'C:\\Users\\alice'
             check()
 

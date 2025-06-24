@@ -1,3 +1,15 @@
+python3.12 (3.12.11-0deepin1) unstable; urgency=medium
+
+  * Python 3.12.11 release.
+    - Fix CVE-2025-4517, CVE-2025-4330, CVE-2025-4138, CVE-2024-12718.
+  * Refresh patches.
+  * Add-Debian-specific-documentation-path-to-IDLE-menu.diff.
+
+  [ Matthias Klose ]
+  * Update sphinx build modules, still build with sphinx 8.1.x.
+
+ -- Tianyu Chen <sweetyfish@deepin.org>  Tue, 24 Jun 2025 13:19:07 +0800
+
 python3.12 (3.12.4-0deepin1) unstable; urgency=medium
 
   * Python 3.12.4 release.

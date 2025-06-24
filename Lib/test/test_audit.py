@@ -23,6 +23,7 @@ class AuditTest(unittest.TestCase):
         with subprocess.Popen(
             [sys.executable, "-X utf8", AUDIT_TESTS_PY, *args],
             encoding="utf-8",
+            errors="backslashreplace",
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         ) as p:
@@ -140,6 +141,7 @@ class AuditTest(unittest.TestCase):
         )
 
 
+    @support.requires_resource('network')
     def test_http(self):
         import_helper.import_module("http.client")
         returncode, events, stderr = self.run_python("test_http_client")

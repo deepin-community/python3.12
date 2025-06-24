@@ -706,7 +706,7 @@ class ModifiedInterpreter(InteractiveInterpreter):
             del _filename, _sys, _dirname, _dir
             \n""".format(filename))
 
-    def showsyntaxerror(self, filename=None):
+    def showsyntaxerror(self, filename=None, **kwargs):
         """Override Interactive Interpreter method: Use Colorizing
 
         Color the offending position instead of printing it and pointing at it
@@ -1131,8 +1131,7 @@ class PyShell(OutputWindow):
     def short_title(self):
         return self.shell_title
 
-    COPYRIGHT = \
-          'Type "help", "copyright", "credits" or "license()" for more information.'
+    SPLASHLINE = 'Enter "help" below or click "Help" above for more information.'
 
     def begin(self):
         self.text.mark_set("iomark", "insert")
@@ -1151,7 +1150,7 @@ class PyShell(OutputWindow):
             sys.displayhook = rpc.displayhook
 
         self.write("Python %s on %s\n%s\n%s" %
-                   (sys.version, sys.platform, self.COPYRIGHT, nosub))
+                   (sys.version, sys.platform, self.SPLASHLINE, nosub))
         self.text.focus_force()
         self.showprompt()
         # User code should use separate default Tk root window

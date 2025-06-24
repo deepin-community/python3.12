@@ -31,3 +31,5 @@ fix-py_compile.diff
 ntpath-import.diff
 python3.12-updates.diff
 issue108447.diff
+no-sphinx-8.2.diff
+Add-Debian-specific-documentation-path-to-IDLE-menu.diff
