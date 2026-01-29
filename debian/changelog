@@ -1,3 +1,9 @@
+python3.12 (3.12.11-0deepin4) unstable; urgency=medium
+
+  * Fix: Documentation doesn't generate with docutils >= 0.22
+
+ -- lichenggang <lichenggang@deepin.org>  Thu, 29 Jan 2026 15:04:07 +0800
+
 python3.12 (3.12.11-0deepin3) unstable; urgency=medium
 
   * Fix: CVE-2025-13836 CVE-2025-6069 CVE-2025-6075 CVE-2025-8194 CVE-2025-8291
