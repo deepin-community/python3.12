@@ -2,6 +2,177 @@
 Python News
 +++++++++++
 
+What's New in Python 3.12.13 final?
+===================================
+
+*Release date: 2026-03-03*
+
+Security
+--------
+
+- gh-144125: :mod:`~email.generator.BytesGenerator` will now refuse to
+  serialize (write) headers that are unsafely folded or delimited; see
+  :attr:`~email.policy.Policy.verify_generated_headers`. (Contributed by Bas
+  Bloemsaat and Petr Viktorin in :gh:`121650`).
+
+- gh-143935: Fixed a bug in the folding of comments when flattening an email
+  message using a modern email policy. Comments consisting of a very long
+  sequence of non-foldable characters could trigger a forced line wrap that
+  omitted the required leading space on the continuation line, causing the
+  remainder of the comment to be interpreted as a new header field. This
+  enabled header injection with carefully crafted inputs.
+
+- gh-143925: Reject control characters in ``data:`` URL media types.
+
+- gh-143919: Reject control characters in :class:`http.cookies.Morsel`
+  fields and values.
+
+- gh-143916: Reject C0 control characters within wsgiref.headers.Headers
+  fields, values, and parameters.
+
+- gh-142145: Remove quadratic behavior in ``xml.minidom`` node ID cache
+  clearing.  In order to do this without breaking existing users, we also
+  add the *ownerDocument* attribute to :mod:`xml.dom.minidom` elements and
+  attributes created by directly instantiating the ``Element`` or ``Attr``
+  class. Note that this way of creating nodes is not supported; creator
+  functions like :py:meth:`xml.dom.Document.documentElement` should be used
+  instead.
+
+- gh-137836: Add support of the "plaintext" element, RAWTEXT elements "xmp",
+  "iframe", "noembed" and "noframes", and optionally RAWTEXT element
+  "noscript" in :class:`html.parser.HTMLParser`.
+
+- gh-136063: :mod:`email.message`: ensure linear complexity for legacy HTTP
+  parameters parsing. Patch by Bénédikt Tran.
+
+- gh-136065: Fix quadratic complexity in :func:`os.path.expandvars`.
+
+- gh-119451: Fix a potential memory denial of service in the
+  :mod:`http.client` module. When connecting to a malicious server, it could
+  cause an arbitrary amount of memory to be allocated. This could have led
+  to symptoms including a :exc:`MemoryError`, swapping, out of memory (OOM)
+  killed processes or containers, or even system crashes.
+
+- gh-119452: Fix a potential memory denial of service in the
+  :mod:`http.server` module. When a malicious user is connected to the CGI
+  server on Windows, it could cause an arbitrary amount of memory to be
+  allocated. This could have led to symptoms including a :exc:`MemoryError`,
+  swapping, out of memory (OOM) killed processes or containers, or even
+  system crashes.
+
+- gh-119342: Fix a potential memory denial of service in the :mod:`plistlib`
+  module. When reading a Plist file received from untrusted source, it could
+  cause an arbitrary amount of memory to be allocated. This could have led
+  to symptoms including a :exc:`MemoryError`, swapping, out of memory (OOM)
+  killed processes or containers, or even system crashes.
+
+Library
+-------
+
+- gh-144833: Fixed a use-after-free in :mod:`ssl` when ``SSL_new()`` returns
+  NULL in ``newPySSLSocket()``. The error was reported via a dangling
+  pointer after the object had already been freed.
+
+- gh-144363: Update bundled `libexpat <https://libexpat.github.io/>`_ to
+  2.7.4
+
+- gh-90949: Add
+  :meth:`~xml.parsers.expat.xmlparser.SetAllocTrackerActivationThreshold`
+  and
+  :meth:`~xml.parsers.expat.xmlparser.SetAllocTrackerMaximumAmplification`
+  to :ref:`xmlparser <xmlparser-objects>` objects to prevent use of
+  disproportional amounts of dynamic memory from within an Expat parser.
+  Patch by Bénédikt Tran.
+
+
+What's New in Python 3.12.12 final?
+===================================
+
+*Release date: 2025-10-09*
+
+Tools/Demos
+-----------
+
+- gh-139330: SBOM generation tool didn't cross-check the version and
+  checksum values against the ``Modules/expat/refresh.sh`` script, leading
+  to the values becoming out-of-date during routine updates.
+
+Security
+--------
+
+- gh-139700: Check consistency of the zip64 end of central directory record.
+  Support records with "zip64 extensible data" if there are no bytes
+  prepended to the ZIP file.
+
+- gh-139400: :mod:`xml.parsers.expat`: Make sure that parent Expat parsers
+  are only garbage-collected once they are no longer referenced by
+  subparsers created by
+  :meth:`~xml.parsers.expat.xmlparser.ExternalEntityParserCreate`. Patch by
+  Sebastian Pipping.
+
+- gh-135661: Fix parsing start and end tags in
+  :class:`html.parser.HTMLParser` according to the HTML5 standard.
+
+  * Whitespaces no longer accepted between ``</`` and the tag name.
+    E.g. ``</ script>`` does not end the script section.
+
+  * Vertical tabulation (``\v``) and non-ASCII whitespaces no longer recognized
+    as whitespaces. The only whitespaces are ``\t\n\r\f`` and space.
+
+  * Null character (U+0000) no longer ends the tag name.
+
+  * Attributes and slashes after the tag name in end tags are now ignored,
+    instead of terminating after the first ``>`` in quoted attribute value.
+    E.g. ``</script/foo=">"/>``.
+
+  * Multiple slashes and whitespaces between the last attribute and closing ``>``
+    are now ignored in both start and end tags. E.g. ``<a foo=bar/ //>``.
+
+  * Multiple ``=`` between attribute name and value are no longer collapsed.
+    E.g. ``<a foo==bar>`` produces attribute "foo" with value "=bar".
+
+- gh-135661: Fix CDATA section parsing in :class:`html.parser.HTMLParser`
+  according to the HTML5 standard: ``] ]>`` and ``]] >`` no longer end the
+  CDATA section. Add private method ``_set_support_cdata()`` which can be
+  used to specify how to parse ``<[CDATA[`` --- as a CDATA section in
+  foreign content (SVG or MathML) or as a bogus comment in the HTML
+  namespace.
+
+- gh-102555: Fix comment parsing in :class:`html.parser.HTMLParser`
+  according to the HTML5 standard. ``--!>`` now ends the comment. ``-- >``
+  no longer ends the comment. Support abnormally ended empty comments
+  ``<-->`` and ``<--->``.
+
+- gh-135462: Fix quadratic complexity in processing specially crafted input
+  in :class:`html.parser.HTMLParser`. End-of-file errors are now handled
+  according to the HTML5 specs -- comments and declarations are
+  automatically closed, tags are ignored.
+
+- gh-118350: Fix support of escapable raw text mode (elements "textarea" and
+  "title") in :class:`html.parser.HTMLParser`.
+
+- gh-86155: :meth:`html.parser.HTMLParser.close` no longer loses data when
+  the ``<script>`` tag is not closed. Patch by Waylan Limberg.
+
+Library
+-------
+
+- gh-139312: Upgrade bundled libexpat to 2.7.3
+
+- gh-138998: Update bundled libexpat to 2.7.2
+
+- gh-130577: :mod:`tarfile` now validates archives to ensure member offsets
+  are non-negative.  (Contributed by Alexander Enrique Urieles Nieto in
+  :gh:`130577`.)
+
+Core and Builtins
+-----------------
+
+- gh-130077: Properly raise custom syntax errors when incorrect syntax
+  containing names that are prefixes of soft keywords is encountered.  Patch
+  by Pablo Galindo.
+
+
 What's New in Python 3.12.11 final?
 ===================================
 
