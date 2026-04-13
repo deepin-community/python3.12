@@ -1,3 +1,19 @@
+python3.12 (3.12.13-0deepin1) unstable; urgency=medium
+
+  * Python 3.12.13 release.
+    - CVE-2025-11468
+    - CVE-2025-15282
+    - CVE-2026-0672
+    - CVE-2026-1299
+    - CVE-2026-0865
+    - CVE-2025-13836
+    - CVE-2025-13837
+    - CVE-2025-12084
+  * Drop no longer needed patches.
+  * Apply two patches from upstream 3.12 branch fixing CVE-2026-4519.
+
+ -- Tianyu Chen <sweetyfish@deepin.org>  Mon, 13 Apr 2026 17:08:29 +0800
+
 python3.12 (3.12.11-0deepin4) unstable; urgency=medium
 
   * Fix: Documentation doesn't generate with docutils >= 0.22
