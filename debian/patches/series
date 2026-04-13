@@ -36,3 +36,5 @@ Add-Debian-specific-documentation-path-to-IDLE-menu.diff
 0001-deepin-sw_64-support.diff
 #patchlevel-noplus.diff
 Remove-Docutils-list-monkeypatch.patch
+0033-gh-143930-Reject-leading-dashes-in-webbrowser-URLs-G.patch
+0034-gh-143930-Tweak-the-exception-message-and-increase-t.patch
