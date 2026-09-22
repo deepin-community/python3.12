@@ -38,3 +38,9 @@ Add-Debian-specific-documentation-path-to-IDLE-menu.diff
 Remove-Docutils-list-monkeypatch.patch
 0033-gh-143930-Reject-leading-dashes-in-webbrowser-URLs-G.patch
 0034-gh-143930-Tweak-the-exception-message-and-increase-t.patch
+0035-gh-146211-Reject-CR-LF-in-HTTP-tunnel-request-header.patch
+0036-gh-146083-Upgrade-bundled-Expat-to-2.7.5-GH-146085-c.patch
+0037-gh-149017-Upgrade-bundled-Expat-to-2.8.0-GH-149020-G.patch
+0038-gh-149486-tarfile.data_filter-validate-written-link-.patch
+0039-Move-dotdot_resolves_early-setting-to-setUpClass.patch
+0040-gh-87451-Apply-CVE-2021-4189-PASV-fix-to-ftplib.ftpc.patch

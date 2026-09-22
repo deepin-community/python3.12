@@ -1,0 +1,331 @@
+From: Stan Ulbrych <89152624+StanFromIreland@users.noreply.github.com>
+Date: Sun, 29 Mar 2026 19:05:14 +0200
+Subject: gh-146083: Upgrade bundled Expat to 2.7.5 (GH-146085) (cherry picked
+ from commit e39d84a37dfc8bcdc0eb4d6f3ce7d5ee829d7f30)
+
+Co-authored-by: Stan Ulbrych <89152624+StanFromIreland@users.noreply.github.com>
+---
+ Misc/sbom.spdx.json            | 32 ++++++++++-----------
+ Modules/expat/expat.h          |  2 +-
+ Modules/expat/expat_external.h |  2 +-
+ Modules/expat/refresh.sh       |  6 ++--
+ Modules/expat/xmlparse.c       | 65 +++++++++++++++++++++++++++++++++++-------
+ Modules/expat/xmlrole.c        |  2 +-
+ Modules/expat/xmltok.c         |  2 +-
+ Modules/expat/xmltok_ns.c      |  2 +-
+ 8 files changed, 78 insertions(+), 35 deletions(-)
+
+diff --git a/Misc/sbom.spdx.json b/Misc/sbom.spdx.json
+index 360b765..5382336 100644
+--- a/Misc/sbom.spdx.json
++++ b/Misc/sbom.spdx.json
+@@ -48,11 +48,11 @@
+       "checksums": [
+         {
+           "algorithm": "SHA1",
+-          "checksumValue": "9bd33bd279c0d7ea37b0f2d7e07c7c53b7053507"
++          "checksumValue": "9dfd09a3be37618cbcea380c2374b2b8f0288f57"
+         },
+         {
+           "algorithm": "SHA256",
+-          "checksumValue": "d20997001462356b5ce3810ebf5256c8205f58462c64f21eb9bf80f8d1822b08"
++          "checksumValue": "26805a0d1a7a6a5cd8ead9cf7f4da29f63f0547a9ad41e80dba4ed9fe1943140"
+         }
+       ],
+       "fileName": "Modules/expat/expat.h"
+@@ -62,11 +62,11 @@
+       "checksums": [
+         {
+           "algorithm": "SHA1",
+-          "checksumValue": "e658ee5d638ab326109282ff09f1541e27fff8c2"
++          "checksumValue": "da0328279276800cc747ea7da23886a3f402ccb3"
+         },
+         {
+           "algorithm": "SHA256",
+-          "checksumValue": "dbe0582b8f8a8140aca97009e8760105ceed9e7df01ea9d8b3fe47cebf2e5b2d"
++          "checksumValue": "15a80e414e9e7c43edba64b1608a77c724387070138693f9e9bcca49c78a2df7"
+         }
+       ],
+       "fileName": "Modules/expat/expat_external.h"
+@@ -174,11 +174,11 @@
+       "checksums": [
+         {
+           "algorithm": "SHA1",
+-          "checksumValue": "7d3d7d72aa56c53fb5b9e10c0e74e161381f0255"
++          "checksumValue": "0c74fbd48dd515c58eeb65b7e71b29da94be4694"
+         },
+         {
+           "algorithm": "SHA256",
+-          "checksumValue": "f4f87aa0268d92f2b8f5e663788bfadd2e926477d0b061ed4463c02ad29a3e25"
++          "checksumValue": "861e7a50ce81f9f16b42d32a9caa4f817d962b274b2929b579511c6f76d348d4"
+         }
+       ],
+       "fileName": "Modules/expat/xmlparse.c"
+@@ -188,11 +188,11 @@
+       "checksums": [
+         {
+           "algorithm": "SHA1",
+-          "checksumValue": "c8769fcb93f00272a6e6ca560be633649c817ff7"
++          "checksumValue": "7cff4d7210f046144f5fa635113f9c26f30fe3d3"
+         },
+         {
+           "algorithm": "SHA256",
+-          "checksumValue": "5b81f0eb0e144b611dbd1bc9e6037075a16bff94f823d57a81eb2a3e4999e91a"
++          "checksumValue": "eaa6c327f9db4a5cec768d0c01927fea212d3ef4d4f970ebc0a98b9f3602784c"
+         }
+       ],
+       "fileName": "Modules/expat/xmlrole.c"
+@@ -216,11 +216,11 @@
+       "checksums": [
+         {
+           "algorithm": "SHA1",
+-          "checksumValue": "63e4766a09e63760c6518670509198f8d638f4ad"
++          "checksumValue": "48b7aa6503302d4157c61a8763629f3236c23502"
+         },
+         {
+           "algorithm": "SHA256",
+-          "checksumValue": "0ad3f915f2748dc91bf4e4b4a50cf40bf2c95769d0eca7e3b293a230d82bb779"
++          "checksumValue": "75da65603e99837fd3116f1453372efd556f9f97d8de73364594dd78b3c8ec54"
+         }
+       ],
+       "fileName": "Modules/expat/xmltok.c"
+@@ -272,11 +272,11 @@
+       "checksums": [
+         {
+           "algorithm": "SHA1",
+-          "checksumValue": "41b8c8fc275882c76d4210b7d40a18e506b07147"
++          "checksumValue": "705842f8a09b09cc021d82a71ab03344bfd07b0a"
+         },
+         {
+           "algorithm": "SHA256",
+-          "checksumValue": "b2188c7e5fa5b33e355cf6cf342dfb8f6e23859f2a6b1ddf79841d7f84f7b196"
++          "checksumValue": "f95a2b4b7efda40f5faf366537cb20a57dddbad9655859d2e304f5e75f6907cc"
+         }
+       ],
+       "fileName": "Modules/expat/xmltok_ns.c"
+@@ -1548,14 +1548,14 @@
+       "checksums": [
+         {
+           "algorithm": "SHA256",
+-          "checksumValue": "461ecc8aa98ab1a68c2db788175665d1a4db640dc05bf0e289b6ea17122144ec"
++          "checksumValue": "9931f9860d18e6cf72d183eb8f309bfb96196c00e1d40caa978e95bc9aa978b6"
+         }
+       ],
+-      "downloadLocation": "https://github.com/libexpat/libexpat/releases/download/R_2_7_4/expat-2.7.4.tar.gz",
++      "downloadLocation": "https://github.com/libexpat/libexpat/releases/download/R_2_7_5/expat-2.7.5.tar.gz",
+       "externalRefs": [
+         {
+           "referenceCategory": "SECURITY",
+-          "referenceLocator": "cpe:2.3:a:libexpat_project:libexpat:2.7.4:*:*:*:*:*:*:*",
++          "referenceLocator": "cpe:2.3:a:libexpat_project:libexpat:2.7.5:*:*:*:*:*:*:*",
+           "referenceType": "cpe23Type"
+         }
+       ],
+@@ -1563,7 +1563,7 @@
+       "name": "expat",
+       "originator": "Organization: Expat development team",
+       "primaryPackagePurpose": "SOURCE",
+-      "versionInfo": "2.7.4"
++      "versionInfo": "2.7.5"
+     },
+     {
+       "SPDXID": "SPDXRef-PACKAGE-hacl-star",
+diff --git a/Modules/expat/expat.h b/Modules/expat/expat.h
+index 6c7c418..18dbaeb 100644
+--- a/Modules/expat/expat.h
++++ b/Modules/expat/expat.h
+@@ -1082,7 +1082,7 @@ XML_SetReparseDeferralEnabled(XML_Parser parser, XML_Bool enabled);
+ */
+ #  define XML_MAJOR_VERSION 2
+ #  define XML_MINOR_VERSION 7
+-#  define XML_MICRO_VERSION 4
++#  define XML_MICRO_VERSION 5
+ 
+ #  ifdef __cplusplus
+ }
+diff --git a/Modules/expat/expat_external.h b/Modules/expat/expat_external.h
+index 6f3f3c4..cf4d445 100644
+--- a/Modules/expat/expat_external.h
++++ b/Modules/expat/expat_external.h
+@@ -12,7 +12,7 @@
+    Copyright (c) 2001-2002 Greg Stein <gstein@users.sourceforge.net>
+    Copyright (c) 2002-2006 Karl Waclawek <karl@waclawek.net>
+    Copyright (c) 2016      Cristian Rodríguez <crrodriguez@opensuse.org>
+-   Copyright (c) 2016-2025 Sebastian Pipping <sebastian@pipping.org>
++   Copyright (c) 2016-2026 Sebastian Pipping <sebastian@pipping.org>
+    Copyright (c) 2017      Rhodri James <rhodri@wildebeest.org.uk>
+    Copyright (c) 2018      Yury Gribov <tetra2005@gmail.com>
+    Licensed under the MIT license:
+diff --git a/Modules/expat/refresh.sh b/Modules/expat/refresh.sh
+index 54d58d0..9e3856b 100755
+--- a/Modules/expat/refresh.sh
++++ b/Modules/expat/refresh.sh
+@@ -12,9 +12,9 @@ fi
+ 
+ # Update this when updating to a new version after verifying that the changes
+ # the update brings in are good. These values are used for verifying the SBOM, too.
+-expected_libexpat_tag="R_2_7_4"
+-expected_libexpat_version="2.7.4"
+-expected_libexpat_sha256="461ecc8aa98ab1a68c2db788175665d1a4db640dc05bf0e289b6ea17122144ec"
++expected_libexpat_tag="R_2_7_5"
++expected_libexpat_version="2.7.5"
++expected_libexpat_sha256="9931f9860d18e6cf72d183eb8f309bfb96196c00e1d40caa978e95bc9aa978b6"
+ 
+ expat_dir="$(realpath "$(dirname -- "${BASH_SOURCE[0]}")")"
+ cd ${expat_dir}
+diff --git a/Modules/expat/xmlparse.c b/Modules/expat/xmlparse.c
+index 086fca5..0248b66 100644
+--- a/Modules/expat/xmlparse.c
++++ b/Modules/expat/xmlparse.c
+@@ -1,4 +1,4 @@
+-/* fab937ab8b186d7d296013669c332e6dfce2f99567882cff1f8eb24223c524a7 (2.7.4+)
++/* 93c1caa66e2b0310459482516af05505b57c5cb7b96df777105308fc585c85d1 (2.7.5+)
+                             __  __            _
+                          ___\ \/ /_ __   __ _| |_
+                         / _ \\  /| '_ \ / _` | __|
+@@ -590,6 +590,8 @@ static XML_Char *poolStoreString(STRING_POOL *pool, const ENCODING *enc,
+ static XML_Bool FASTCALL poolGrow(STRING_POOL *pool);
+ static const XML_Char *FASTCALL poolCopyString(STRING_POOL *pool,
+                                                const XML_Char *s);
++static const XML_Char *FASTCALL poolCopyStringNoFinish(STRING_POOL *pool,
++                                                       const XML_Char *s);
+ static const XML_Char *poolCopyStringN(STRING_POOL *pool, const XML_Char *s,
+                                        int n);
+ static const XML_Char *FASTCALL poolAppendString(STRING_POOL *pool,
+@@ -5086,7 +5088,7 @@ entityValueInitProcessor(XML_Parser parser, const char *s, const char *end,
+     }
+     /* If we get this token, we have the start of what might be a
+        normal tag, but not a declaration (i.e. it doesn't begin with
+-       "<!").  In a DTD context, that isn't legal.
++       "<!" or "<?").  In a DTD context, that isn't legal.
+     */
+     else if (tok == XML_TOK_INSTANCE_START) {
+       *nextPtr = next;
+@@ -5175,6 +5177,15 @@ entityValueProcessor(XML_Parser parser, const char *s, const char *end,
+       /* found end of entity value - can store it now */
+       return storeEntityValue(parser, enc, s, end, XML_ACCOUNT_DIRECT, NULL);
+     }
++    /* If we get this token, we have the start of what might be a
++       normal tag, but not a declaration (i.e. it doesn't begin with
++       "<!" or "<?").  In a DTD context, that isn't legal.
++    */
++    else if (tok == XML_TOK_INSTANCE_START) {
++      *nextPtr = next;
++      return XML_ERROR_SYNTAX;
++    }
++
+     start = next;
+   }
+ }
+@@ -6789,7 +6800,14 @@ storeEntityValue(XML_Parser parser, const ENCODING *enc,
+       return XML_ERROR_NO_MEMORY;
+   }
+ 
+-  const char *next;
++  const char *next = entityTextPtr;
++
++  /* Nothing to tokenize. */
++  if (entityTextPtr >= entityTextEnd) {
++    result = XML_ERROR_NONE;
++    goto endEntityValue;
++  }
++
+   for (;;) {
+     next
+         = entityTextPtr; /* XmlEntityValueTok doesn't always set the last arg */
+@@ -7439,16 +7457,24 @@ setContext(XML_Parser parser, const XML_Char *context) {
+       else {
+         if (! poolAppendChar(&parser->m_tempPool, XML_T('\0')))
+           return XML_FALSE;
+-        prefix
+-            = (PREFIX *)lookup(parser, &dtd->prefixes,
+-                               poolStart(&parser->m_tempPool), sizeof(PREFIX));
+-        if (! prefix)
++        const XML_Char *const prefixName = poolCopyStringNoFinish(
++            &dtd->pool, poolStart(&parser->m_tempPool));
++        if (! prefixName) {
+           return XML_FALSE;
+-        if (prefix->name == poolStart(&parser->m_tempPool)) {
+-          prefix->name = poolCopyString(&dtd->pool, prefix->name);
+-          if (! prefix->name)
+-            return XML_FALSE;
+         }
++
++        prefix = (PREFIX *)lookup(parser, &dtd->prefixes, prefixName,
++                                  sizeof(PREFIX));
++
++        const bool prefixNameUsed = prefix && prefix->name == prefixName;
++        if (prefixNameUsed)
++          poolFinish(&dtd->pool);
++        else
++          poolDiscard(&dtd->pool);
++
++        if (! prefix)
++          return XML_FALSE;
++
+         poolDiscard(&parser->m_tempPool);
+       }
+       for (context = s + 1; *context != CONTEXT_SEP && *context != XML_T('\0');
+@@ -8036,6 +8062,23 @@ poolCopyString(STRING_POOL *pool, const XML_Char *s) {
+   return s;
+ }
+ 
++// A version of `poolCopyString` that does not call `poolFinish`
++// and reverts any partial advancement upon failure.
++static const XML_Char *FASTCALL
++poolCopyStringNoFinish(STRING_POOL *pool, const XML_Char *s) {
++  const XML_Char *const original = s;
++  do {
++    if (! poolAppendChar(pool, *s)) {
++      // Revert any previously successful advancement
++      const ptrdiff_t advancedBy = s - original;
++      if (advancedBy > 0)
++        pool->ptr -= advancedBy;
++      return NULL;
++    }
++  } while (*s++);
++  return pool->start;
++}
++
+ static const XML_Char *
+ poolCopyStringN(STRING_POOL *pool, const XML_Char *s, int n) {
+   if (! pool->ptr && ! poolGrow(pool)) {
+diff --git a/Modules/expat/xmlrole.c b/Modules/expat/xmlrole.c
+index d56bee8..b1dfb45 100644
+--- a/Modules/expat/xmlrole.c
++++ b/Modules/expat/xmlrole.c
+@@ -12,7 +12,7 @@
+    Copyright (c) 2002-2006 Karl Waclawek <karl@waclawek.net>
+    Copyright (c) 2002-2003 Fred L. Drake, Jr. <fdrake@users.sourceforge.net>
+    Copyright (c) 2005-2009 Steven Solie <steven@solie.ca>
+-   Copyright (c) 2016-2023 Sebastian Pipping <sebastian@pipping.org>
++   Copyright (c) 2016-2026 Sebastian Pipping <sebastian@pipping.org>
+    Copyright (c) 2017      Rhodri James <rhodri@wildebeest.org.uk>
+    Copyright (c) 2019      David Loffredo <loffredo@steptools.com>
+    Copyright (c) 2021      Donghee Na <donghee.na@python.org>
+diff --git a/Modules/expat/xmltok.c b/Modules/expat/xmltok.c
+index 32cd5f1..f6e5f74 100644
+--- a/Modules/expat/xmltok.c
++++ b/Modules/expat/xmltok.c
+@@ -12,7 +12,7 @@
+    Copyright (c) 2002      Greg Stein <gstein@users.sourceforge.net>
+    Copyright (c) 2002-2016 Karl Waclawek <karl@waclawek.net>
+    Copyright (c) 2005-2009 Steven Solie <steven@solie.ca>
+-   Copyright (c) 2016-2024 Sebastian Pipping <sebastian@pipping.org>
++   Copyright (c) 2016-2026 Sebastian Pipping <sebastian@pipping.org>
+    Copyright (c) 2016      Pascal Cuoq <cuoq@trust-in-soft.com>
+    Copyright (c) 2016      Don Lewis <truckman@apache.org>
+    Copyright (c) 2017      Rhodri James <rhodri@wildebeest.org.uk>
+diff --git a/Modules/expat/xmltok_ns.c b/Modules/expat/xmltok_ns.c
+index 810ca2c..1cd60de 100644
+--- a/Modules/expat/xmltok_ns.c
++++ b/Modules/expat/xmltok_ns.c
+@@ -11,7 +11,7 @@
+    Copyright (c) 2002      Greg Stein <gstein@users.sourceforge.net>
+    Copyright (c) 2002      Fred L. Drake, Jr. <fdrake@users.sourceforge.net>
+    Copyright (c) 2002-2006 Karl Waclawek <karl@waclawek.net>
+-   Copyright (c) 2017-2021 Sebastian Pipping <sebastian@pipping.org>
++   Copyright (c) 2017-2026 Sebastian Pipping <sebastian@pipping.org>
+    Copyright (c) 2025      Alfonso Gregory <gfunni234@gmail.com>
+    Licensed under the MIT license:
+ 

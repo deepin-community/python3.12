@@ -1,3 +1,15 @@
+python3.12 (3.12.13-0deepin2) UNRELEASED; urgency=medium
+
+  * Import from upstream 3.12 branch:
+    - gh-146211: Reject CR/LF in HTTP tunnel request headers (GH-146212) (cherry picked from commit 05ed7ce7ae9e17c23a04085b2539fe6d6d3cef69)
+    - gh-146083: Upgrade bundled Expat to 2.7.5 (GH-146085) (cherry picked from commit e39d84a37dfc8bcdc0eb4d6f3ce7d5ee829d7f30)
+    - gh-149017: Upgrade bundled Expat to 2.8.0 (GH-149020) (GH-149073) (cherry picked from commit c181c5fa16273f0cc4d7ed20a016e0921f60fdfd)
+    - gh-149486: tarfile.data_filter: validate written link target (GH-149487)
+    - Move dotdot_resolves_early setting to setUpClass
+    - gh-87451: Apply CVE-2021-4189 PASV fix to ftplib.ftpcp() (GH-149648)
+
+ -- Tianyu Chen <sweetyfish@deepin.org>  Thu, 21 May 2026 18:16:57 +0800
+
 python3.12 (3.12.13-0deepin1) unstable; urgency=medium
 
   * Python 3.12.13 release.
