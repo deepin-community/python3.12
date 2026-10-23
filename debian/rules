@@ -5,6 +5,13 @@ unexport CFLAGS CXXFLAGS LDFLAGS CPPFLAGS
 
 export SHELL = /bin/bash
 
+# Reproducibility: pin the hash seed of the Python processes run during the
+# build (in particular sphinx when the info documentation is generated).
+# Without a fixed seed the per-process randomized set/dict iteration order
+# leaks into the ordering of index entries and makes the tag table of the
+# generated python3.12.info differ between builds.
+export PYTHONHASHSEED := 0
+
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
@@ -237,7 +244,13 @@ endif
 
 BASE_LTO_CFLAGS = -g -fwrapv -O3
 ifeq ($(with_lto),yes)
-    LTO_CFLAGS = $(BASE_LTO_CFLAGS) -flto -fuse-linker-plugin
+    # -frandom-seed: GCC's default LTO random seed is regenerated for every
+    # compilation (SOURCE_DATE_EPOCH has no effect on it) and leaks into the
+    # .gnu.lto_* section names and LTO bytecode.  Without a fixed seed the
+    # link-time code layout of the interpreter and of the extension modules
+    # (e.g. _queue) drifts between builds, changing the build-ids of the
+    # shipped binaries, libpython3.12.a and the -dbg package.
+    LTO_CFLAGS = $(BASE_LTO_CFLAGS) -flto -fuse-linker-plugin -frandom-seed=deepin-python3.12
     with_fat_lto := $(shell dpkg --compare-versions $$($(CC) --version \
 			| sed -n '/^$(CC)/s,.* ,,p') ge 4.9 && echo yes)
     ifeq ($(with_fat_lto),yes)
@@ -252,6 +265,7 @@ sysconfig_substflags = \
 	$(if $(with_lto),$(foreach i,-flto=auto -flto -fuse-linker-plugin -ffat-lto-objects,-e 's/$(i)//g')) \
 	-e '/^OPT/s,-O3,-O2,' \
 	-e 's/-O3/-O2/g' \
+	-e 's/-frandom-seed=[^ ]*//g' \
 	-e 's/-fprofile-use *-fprofile-correction//g' \
 	-e 's/-fstack-protector /-fstack-protector-strong /g' \
 	-e "s/-specs=[^ '\"]*//g" \
@@ -720,7 +734,22 @@ else
 	rm -rf $(TEST_DIR)/shared
 	@echo "END test shared"
 endif
-	cp -p $(buildd_static)/test_results debian/
+	cp -p $(buildd_static)/test_results debian/test_results.unnormalized
+	: # strip run-time noise (worker pids, timings, load average, temp
+	: # dirs, parallel test order) so the shipped log is reproducible
+	sed -E \
+	    -e 's/test_python_worker_[0-9]+/test_python_worker_N/g' \
+	    -e 's/0:[0-9]{2}:[0-9]{2}/TIME/g' \
+	    -e 's/load avg: [0-9.]+/load avg: N/g' \
+	    -e 's/pid=[0-9]+/pid=N/g' \
+	    -e 's/test_[0-9]+_tmp/test_N_tmp/g' \
+	    -e 's/Ran ([0-9]+) tests? in [0-9.]+s/Ran \1 tests in Ns/g' \
+	    -e 's/passed \([0-9.]+ sec\)/passed (N sec)/g' \
+	    -e 's/passed \[([0-9.]+) secs\]/passed [N secs]/g' \
+	    -e 's/\[[0-9.]+ secs\]/[N secs]/g' \
+	    -e 's/Total duration: [0-9]+ min [0-9]+ sec/Total duration: N/' \
+	    debian/test_results.unnormalized | LC_ALL=C sort > debian/test_results
+	rm -f debian/test_results.unnormalized
 	touch stamps/stamp-check
 
 stamps/stamp-pybench:

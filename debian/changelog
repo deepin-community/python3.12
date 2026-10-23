@@ -1,3 +1,24 @@
+python3.12 (3.12.13-0deepin2) unstable; urgency=medium
+
+  * fix(build): make the build bit-reproducible (LTO random seed, test
+    log, docs)
+    - Add -frandom-seed=deepin-python3.12 to LTO_CFLAGS: GCC's default
+      LTO random seed is regenerated per compilation (SOURCE_DATE_EPOCH
+      does not affect it) and leaks into .gnu.lto_* section names and
+      LTO bytecode; two rebuilds of 3.12.13-0deepin1 had the
+      interpreter, _queue extension, libpython3.12.a and python.o laid
+      out differently (only build-ids and ordering changed), breaking
+      6 of 16 binary packages. Also strip the flag from the recorded
+      sysconfig flags
+    - Normalize the shipped test_results log (worker pids, timings,
+      load average, temp dirs, parallel test order) so python3.12-dev
+      rebuilds are identical
+    - Export PYTHONHASHSEED=0 so sphinx generates the info docs with a
+      stable index entry order; the tag table of python3.12.info
+      differed between builds otherwise
+
+ -- lichenggang <lichenggang@uniontech.com>  Sat, 24 Oct 2026 00:44:34 +0800
+
 python3.12 (3.12.13-0deepin1) unstable; urgency=medium
 
   * Python 3.12.13 release.
