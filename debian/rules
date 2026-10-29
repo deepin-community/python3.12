@@ -231,6 +231,28 @@ ifneq (,$(findstring nopgo, $(DEB_BUILD_OPTIONS)))
   with_pgo :=
 endif
 
+# Reproducibility: only build with PGO when it is explicitly requested.
+# The counters written by -fprofile-generate are not reproducible on their own.
+# They depend on the address layout (CPython hashes objects by address, so with
+# ASLR the dict/set ordering, the number of hash collisions and the malloc/free
+# counts move: two "python -c pass" runs differ in Objects/obmalloc.gcda and
+# Objects/dictobject.gcda) and on timing (tests that loop for a fixed wall
+# clock budget do a different number of iterations under a different load).
+# Two full training runs of 3.12.13-0deepin2 differed in 251 of 297 .gcda
+# files, and -fprofile-use turns those differences into different inlining and
+# basic block ordering.  The uos-debrebuild comparison of 3.12.13-0deepin2 had
+# libpython3.12-dev (libpython3.12.a: 60 of 190 members), python3.12-minimal
+# and python3.12-nopie (/usr/bin/python3.12), python3.12-dbg and
+# libpython3.12-stdlib (_json) differ, i.e. exactly what comes out of the two
+# PGO build trees, while every package built from the non-PGO build-shared and
+# build-debug trees was identical, and two non-PGO builds of build-static are
+# byte-identical.
+# Build with DEB_BUILD_OPTIONS=usepgo to get the optimized interpreter back;
+# such a build is not bit-reproducible.
+ifeq (,$(findstring usepgo, $(DEB_BUILD_OPTIONS)))
+  with_pgo :=
+endif
+
 ifneq (,$(findstring nolto, $(DEB_BUILD_OPTIONS)))
   with_lto :=
 endif
@@ -376,12 +398,21 @@ PROFILE_TASK = ../Lib/test/regrtest.py \
 	-j 1 -unone,decimal \
 	-x $(sort $(TEST_EXCLUDES) $(PROFILE_EXCLUDES))
 
+# Best effort for the DEB_BUILD_OPTIONS=usepgo case: run every profile
+# invocation with ASLR disabled, which removes the address-hash part of the
+# counter instability described above.  personality(2) is inherited across
+# fork/exec, so wrapping each invocation covers the whole test process tree;
+# setarch is probed first so the build keeps working where ADDR_NO_RANDOMIZE is
+# not permitted.
+PROFILE_RUNNER := $(shell setarch -R true 2>/dev/null && echo setarch -R)
+
 stamps/stamp-build-static: stamps/stamp-configure-static
 	dh_testdir
 	$(MAKE) $(NJOBS) -C $(buildd_static) \
 		EXTRA_CFLAGS="$(EXTRA_OPT_CFLAGS)" \
 		CONFIGURE_LDFLAGS="$(DPKG_PIE_LDFLAGS) $(LTO_CFLAGS)" \
-		PROFILE_TASK='$(PROFILE_TASK)' $(make_build_target)
+		PROFILE_TASK='$(PROFILE_TASK)' \
+		PROFILE_RUNNER='$(PROFILE_RUNNER)' $(make_build_target)
 
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 	: # check that things are correctly built
@@ -399,7 +430,8 @@ stamps/stamp-build-nopie: stamps/stamp-configure-nopie
 	$(MAKE) $(NJOBS) -C $(buildd_nopie) \
 		EXTRA_CFLAGS="$(EXTRA_OPT_CFLAGS)" \
 		CONFIGURE_LDFLAGS="$(DPKG_LDFLAGS) $(LTO_CFLAGS)" \
-		PROFILE_TASK='$(PROFILE_TASK)' $(make_build_target)
+		PROFILE_TASK='$(PROFILE_TASK)' \
+		PROFILE_RUNNER='$(PROFILE_RUNNER)' $(make_build_target)
 
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 	: # check that things are correctly built

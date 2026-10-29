@@ -1,3 +1,43 @@
+python3.12 (3.12.13-0deepin3) unstable; urgency=medium
+
+  * fix(build): stop building with PGO, it is not bit-reproducible
+    - The uos-debrebuild rebuild of 3.12.13-0deepin2 still differed in
+      libpython3.12-dev (libpython3.12.a, 51 of 190 archive members),
+      python3.12-minimal and python3.12-nopie (/usr/bin/python3.12),
+      python3.12-dbg and libpython3.12-stdlib (_json), i.e. exactly the
+      artifacts produced by the two PGO build trees (build-static and
+      build-nopie); everything built by the non-PGO build-shared and
+      build-debug trees was identical. Example: in Objects/abstract.o
+      PyBuffer_GetPointer is 68 bytes in .text in one build and 71 bytes
+      in .text.hot in the other, and _json.so keeps its size but gets a
+      different switch jump table and block order
+    - Those differences come from the PGO profile: -fprofile-generate
+      counters depend on the exact execution of the test suite, and the
+      suite is not deterministic. CPython hashes objects by address
+      (object.__hash__ is id() based), so ASLR moves the dict/set
+      iteration order, the number of hash collisions and the malloc/free
+      counters: two "python -c pass" runs differ in Objects/obmalloc.gcda
+      and Objects/dictobject.gcda, and three runs are identical once
+      ASLR is disabled. The counters also follow the wall clock (tests
+      that loop for a fixed budget do a different number of iterations
+      under a different load). Two full training runs of this source
+      differed in 251 of 297 .gcda files; -fprofile-use then inlines and
+      reorders accordingly, which changes the shipped code
+    - Build without PGO by default. Pinning ASLR for the training only
+      removes the first half of the problem (with ASLR disabled two
+      training runs still differed in 232 of 297 .gcda files, and the
+      non-PGO artifacts were the only ones that came out byte-identical),
+      so the optimization is not worth the broken rebuilds
+    - DEB_BUILD_OPTIONS=usepgo still builds with PGO for benchmarking;
+      that path now runs the profile task under setarch -R (probed with
+      "setarch -R true", left empty where ADDR_NO_RANDOMIZE is not
+      permitted) so its profile is at least stable with respect to the
+      address layout
+    - Verified: two non-PGO builds of build-static produce byte-identical
+      libpython3.12.a, interpreter binary and _json.so
+
+ -- lichenggang <lichenggang@uniontech.com>  Thu, 29 Oct 2026 15:40:00 +0800
+
 python3.12 (3.12.13-0deepin2) unstable; urgency=medium
 
   * fix(build): make the build bit-reproducible (LTO random seed, test
