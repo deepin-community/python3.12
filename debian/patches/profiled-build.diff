@@ -1,4 +1,6 @@
-Description: Ignore errors in the profile task.
+Description: Ignore errors in the profile task; allow a wrapper around the
+ interpreter that runs the tests (used to disable ASLR for reproducibility,
+ see debian/rules PROFILE_RUNNER).
  FIXME: Back story?
 
 Forwarded: no
@@ -13,12 +15,12 @@ Forwarded: no
 +	task="$(PROFILE_TASK)"; \
 +	case "$$task" in \
 +	*-s\ *) \
-+	  $(LLVM_PROF_FILE) $(RUNSHARED) ./$(BUILDPYTHON) $$task; \
++	  $(LLVM_PROF_FILE) $(RUNSHARED) $(PROFILE_RUNNER) ./$(BUILDPYTHON) $$task; \
 +	  while [ -f $(abs_builddir)/build/pynexttest ]; do \
-+	    $(LLVM_PROF_FILE) $(RUNSHARED) ./$(BUILDPYTHON) $$task; \
++	    $(LLVM_PROF_FILE) $(RUNSHARED) $(PROFILE_RUNNER) ./$(BUILDPYTHON) $$task; \
 +	  done;; \
 +	*) \
-+	  $(LLVM_PROF_FILE) $(RUNSHARED) ./$(BUILDPYTHON) $$task; \
++	  $(LLVM_PROF_FILE) $(RUNSHARED) $(PROFILE_RUNNER) ./$(BUILDPYTHON) $$task; \
 +	esac || true
  	$(LLVM_PROF_MERGER)
  	# Remove profile generation binary since we are done with it.
